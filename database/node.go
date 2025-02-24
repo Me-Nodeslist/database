@@ -22,15 +22,6 @@ type NodeInfo struct {
 	OnlineDays_recentWeek uint8
 }
 
-type DelegationInfo struct {
-	gorm.Model
-	LicenseOwner string `gorm:"uniqueIndex;column:nodeAddress"`
-	TokenID string `gorm:"uniqueIndex;column:tokenID"`
-	NodeAddress string `gorm:"uniqueIndex;column:nodeAddress"`
-	TotalReward string
-	WithdrawedReward string
-}
-
 type NodeDailyDelegation struct {
 	gorm.Model
 	NodeAddress string `gorm:"uniqueIndex;column:nodeAddress"`

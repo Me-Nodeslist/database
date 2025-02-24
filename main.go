@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	local := make([]*cli.Command, 0, 1)
+	local := make([]*cli.Command, 0, 2)
 	local = append(local, cmd.DelegationServerCmd, cmd.VersionCmd)
 	app := cli.App{
 		Commands: local,

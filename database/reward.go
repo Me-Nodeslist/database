@@ -29,3 +29,9 @@ type ClaimedInfo struct {
 	WaitClaimAmount string
 	TotalClaimedAmount string
 }
+
+type RewardWithdrawInfo struct {
+	gorm.Model
+	Receiver string `gorm:"uniqueIndex;column:receiver"`
+	Amount         string
+}
