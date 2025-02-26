@@ -63,3 +63,23 @@ func GetLicenseInfoByTokenID(tokenID string) (LicenseInfo, error) {
 	}
 	return licenseInfo, nil
 }
+
+func GetLicenseInfosByOwner(ownerAddr common.Address, offset int, limit int) ([]LicenseInfo, error) {
+	var licenseInfos []LicenseInfo
+	owner := ownerAddr.Hex()
+	err := GlobalDataBase.Model(&LicenseInfo{}).Where("owner = ?", owner).Offset(offset).Limit(limit).Find(&licenseInfos).Error
+	if err != nil {
+		return licenseInfos, err
+	}
+	return licenseInfos, nil
+}
+
+func GetLicenseInfosByNode(delegatedNodeAddr common.Address, offset int, limit int) ([]LicenseInfo, error) {
+	var licenseInfos []LicenseInfo
+	delegatedNode := delegatedNodeAddr.Hex()
+	err := GlobalDataBase.Model(&LicenseInfo{}).Where("delegated_node = ?", delegatedNode).Offset(offset).Limit(limit).Find(&licenseInfos).Error
+	if err != nil {
+		return licenseInfos, err
+	}
+	return licenseInfos, nil
+}

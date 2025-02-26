@@ -52,7 +52,7 @@ func InitDatabase(path string) error {
 	if err != nil {
 		return err
 	}
-	db.AutoMigrate(&LicenseInfo{}, &DelMEMOMintInfo{}, &RedeemInfo{}, &ClaimedInfo{}, &FoundationWithdrawInfo{}, &NodeInfo{}, &DelegationInfo{}, &NodeDailyDelegation{})
+	db.AutoMigrate(&LicenseInfo{}, &DelMEMOMintInfo{}, &RedeemInfo{}, &NodeInfo{}, &NodeDailyDelegation{})
 	GlobalDataBase = db
 	return nil
 }
