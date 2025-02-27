@@ -8,6 +8,13 @@ import (
 	"gorm.io/gorm"
 )
 
+type DelMEMOTransferInfo struct {
+	gorm.Model
+	From   string
+	To     string
+	Amount string
+}
+
 type DelMEMOMintInfo struct {
 	gorm.Model
 	Depositer string
@@ -33,6 +40,15 @@ type RewardWithdrawInfo struct {
 	Amount   string
 }
 
+func InitDelMEMOTransferInfoTable() error {
+	return GlobalDataBase.AutoMigrate(&DelMEMOTransferInfo{})
+}
+
+func (dm *DelMEMOTransferInfo) CreateDelMEMOTransferInfo() error {
+	return GlobalDataBase.Create(dm).Error
+}
+
+// ------------------DelMEMOMintInfo--------------------
 func InitDelMEMOMintInfoTable() error {
 	return GlobalDataBase.AutoMigrate(&DelMEMOMintInfo{})
 }
@@ -42,13 +58,13 @@ func (dm *DelMEMOMintInfo) CreateDelMEMOMintInfo() error {
 }
 
 func GetAllMintAmount() (*big.Int, error) {
-	var delMemoMintInfos []DelMEMOMintInfo
+	var infos []DelMEMOMintInfo
 	res := big.NewInt(0)
-	err := GlobalDataBase.Model(&DelMEMOMintInfo{}).Find(&delMemoMintInfos).Error
+	err := GlobalDataBase.Model(&DelMEMOMintInfo{}).Find(&infos).Error
 	if err != nil {
 		return nil, err
 	}
-	for _, info := range delMemoMintInfos {
+	for _, info := range infos {
 		amount, ok := new(big.Int).SetString(info.Amount, 10)
 		if !ok {
 			continue
@@ -67,7 +83,7 @@ func (r *RedeemInfo) CreateRedeemInfo() error {
 	return GlobalDataBase.Create(r).Error
 }
 
-func (r *RedeemInfo) UpdateRedeemInfo(redeemID string) error {
+func (r *RedeemInfo) UpdateRedeemInfo() error {
 	return GlobalDataBase.Model(&RedeemInfo{}).Where("redeemid = ?", r.RedeemID).Updates(map[string]interface{}{"canceled": r.Canceled, "claimed": r.Claimed}).Error
 }
 
@@ -175,7 +191,7 @@ func GetClaimedAmountByInitiator(initiatorAddr common.Address) (*big.Int, error)
 	return res, nil
 }
 
-// ------------------RedeemInfo--------------------
+// ------------------RewardWithdrawInfo--------------------
 func InitRewardWithdrawInfoTable() error {
 	return GlobalDataBase.AutoMigrate(&RewardWithdrawInfo{})
 }
@@ -184,10 +200,10 @@ func (rw *RewardWithdrawInfo) CreateRewardWithdrawInfo() error {
 	return GlobalDataBase.Create(rw).Error
 }
 
-func GetWithdrawInfosByReceiver(receiverAddr common.Address) ([]RewardWithdrawInfo, error) {
+func GetWithdrawInfosByReceiver(receiverAddr common.Address, offset int, limit int) ([]RewardWithdrawInfo, error) {
 	var infos []RewardWithdrawInfo
 	receiver := receiverAddr.Hex()
-	err := GlobalDataBase.Model(&RewardWithdrawInfo{}).Where("receiver = ?", receiver).Find(&infos).Error
+	err := GlobalDataBase.Model(&RewardWithdrawInfo{}).Where("receiver = ?", receiver).Offset(offset).Limit(limit).Find(&infos).Error
 	if err != nil {
 		return nil, err
 	}
@@ -203,7 +219,7 @@ func GetTotalWithdrawAmountByReceiver(receiverAddr common.Address) (*big.Int, er
 		return nil, err
 	}
 	for _, info := range infos {
-		amount,ok := new(big.Int).SetString(info.Amount, 10)
+		amount, ok := new(big.Int).SetString(info.Amount, 10)
 		if !ok {
 			continue
 		}

@@ -1,10 +1,23 @@
 package database
 
 import (
+	"math/big"
+
 	"github.com/ethereum/go-ethereum/common"
 	"gorm.io/gorm"
 )
 
+type NodeInfoOnChain struct {
+	Id uint32
+	Active bool
+	LastConfirmDate uint32
+	CommissionRate uint8
+	Recipient common.Address
+	SelfTotalRewards *big.Int
+	SelfClaimedRewards *big.Int
+	DelegationRewards *big.Int
+	CommissionRateLastModifyAt *big.Int
+}
 type NodeInfo struct {
 	gorm.Model
 	NodeID       uint32 `gorm:"uniqueIndex;column:nodeid"`

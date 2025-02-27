@@ -213,7 +213,8 @@ func (d *Dumper) Dump() error {
 			err = d.HandleDelMemoMint(event)
 		case "Redeem":
 			logger.Info("Handle DelMEMO Redeem event")
-			err = d.HandleDelMemoRedeem(event)
+			block, _ := client.BlockByNumber(context.Background(), big.NewInt(int64(event.BlockNumber)))
+			err = d.HandleDelMemoRedeem(event, block.Time())
 		case "CancelRedeem":
 			logger.Info("Handle DelMEMO CancelRedeem event")
 			err = d.HandleDelMemoCancelRedeem(event)
@@ -258,31 +259,38 @@ func (d *Dumper) Dump() error {
 		switch eventName {
 		case "ModifyCommissionRate":
 			logger.Info("Handle Delegation ModifyCommissionRate event")
-			err = d.HandleDelegationModifyCommissionRate(event)
+			block, _ := client.BlockByNumber(context.Background(), big.NewInt(int64(event.BlockNumber)))
+			err = d.HandleModifyCommissionRate(event, block.Time())
 		case "NodeWithdraw":
 			logger.Info("Handle Delegation NodeWithdraw event")
-			err = d.HandleDelegationNodeWithdraw(event)
+			err = d.HandleNodeWithdraw(event)
 		case "ConfirmNodeReward":
 			logger.Info("Handle Delegation ConfirmNodeReward event")
-			err = d.HandleDelegationConfirmNodeReward(event)
+			err = d.HandleConfirmNodeReward(event)
 		case "NodeDailyDelegations":
 			logger.Info("Handle Delegation NodeDailyDelegations event")
-			err = d.HandleDelegationNodeDailyDelegations(event)
+			err = d.HandleNodeDailyDelegations(event)
 		case "Delegate":
 			logger.Info("Handle Delegation Delegate event")
-			err = d.HandleDelegationDelegate(event)
+			err = d.HandleDelegate(event)
 		case "Undelegate":
 			logger.Info("Handle Delegation Undelegate event")
-			err = d.HandleDelegationUndelegate(event)
+			err = d.HandleUndelegate(event)
 		case "Redelegate":
 			logger.Info("Handle Delegation Redelegate event")
-			err = d.HandleDelegationRedelegate(event)
+			err = d.HandleRedelegate(event)
 		case "ClaimReward":
 			logger.Info("Handle Delegation ClaimReward event")
-			err = d.HandleDelegationClaimReward(event)
+			err = d.HandleClaimReward(event)
 		case "NodeRegister":
 			logger.Info("Handle Delegation NodeRegister event")
-			err = d.HandleDelegationNodeRegister(event)
+			block, _ := client.BlockByNumber(context.Background(), big.NewInt(int64(event.BlockNumber)))
+			nodeInfo, err := d.getNodeInfo(client, event)
+			if err != nil {
+				logger.Error(err.Error())
+				continue
+			}
+			err = d.HandleNodeRegister(event, block.Time(), &nodeInfo)
 		default:
 			continue
 		}
@@ -309,4 +317,29 @@ func (d *Dumper) unpack(log types.Log, contractIndex uint8, out interface{}) err
 	}
 
 	return abi.ParseTopics(out, indexed, log.Topics[1:])
+}
+
+func (d *Dumper) getNodeInfo(client *ethclient.Client, log types.Log) (database.NodeInfoOnChain,error) {
+	var nodeInfo database.NodeInfoOnChain
+	node, err := d.GetNodeAddr(log)
+	if err != nil {
+		return nodeInfo, err
+	}
+	data, err := d.contractABI[3].Pack("getNodeInfo", node)
+	if err != nil {
+		return nodeInfo, err
+	}
+	callMsg := ethereum.CallMsg{
+		To:   &(d.contractAddress[3]),
+		Data: data,
+	}
+	res, err := client.CallContract(context.Background(), callMsg, nil)
+	if err != nil {
+		return nodeInfo, err
+	}
+	err = d.contractABI[3].UnpackIntoInterface(&nodeInfo, "getNodeInfo", res)
+	if err != nil {
+		return nodeInfo, err
+	}
+	return nodeInfo, nil
 }
