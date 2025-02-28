@@ -1,17 +1,18 @@
 package database
 
 import (
-	"gorm.io/gorm"
 	"github.com/ethereum/go-ethereum/common"
+	"gorm.io/gorm"
 )
 
 type LicenseInfo struct {
 	gorm.Model
-	TokenID       string `gorm:"uniqueIndex;column:tokenid"`
-	Owner         string
-	Delegated     bool
-	DelegatedNode string
-	TotalReward string
+	TokenID          string `gorm:"uniqueIndex;column:tokenid"`
+	Owner            string
+	Delegated        bool
+	DelegatedNode    string
+	TotalReward      string
+	InitialReward    string
 	WithdrawedReward string
 }
 
@@ -32,12 +33,18 @@ func (l *LicenseInfo) UpdateLicenseDelegation() error {
 }
 
 func (l *LicenseInfo) UpdateLicenseReward() error {
-	return GlobalDataBase.Model(&LicenseInfo{}).Where("tokenid = ?", l.TokenID).Updates(map[string]interface{}{"total_reward": l.TotalReward, "withdrawed_reward": l.WithdrawedReward}).Error
+	return GlobalDataBase.Model(&LicenseInfo{}).Where("tokenid = ?", l.TokenID).Updates(map[string]interface{}{"total_reward": l.TotalReward, "initial_reward": l.InitialReward, "withdrawed_reward": l.WithdrawedReward}).Error
 }
 
 func GetLicenseAmount() (int64, error) {
 	var length int64
 	err := GlobalDataBase.Model(&LicenseInfo{}).Count(&length).Error
+	return length, err
+}
+
+func GetDelegatedLicenseAmount() (int64, error) {
+	var length int64
+	err := GlobalDataBase.Model(&LicenseInfo{}).Where("delegated = ?", true).Count(&length).Error
 	return length, err
 }
 

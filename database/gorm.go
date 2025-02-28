@@ -24,23 +24,27 @@ type DABlockNumber struct {
 func InitDatabase(path string) error {
 	dir, err := homedir.Expand(path)
 	if err != nil {
+		logger.Error(err.Error())
 		return err
 	}
 
 	if _, err := os.Stat(dir); os.IsNotExist(err) {
 		err := os.MkdirAll(dir, 0666)
 		if err != nil {
+			logger.Error(err.Error())
 			return err
 		}
 	}
 
 	db, err := gorm.Open(sqlite.Open(filepath.Join(dir, "server.db")), &gorm.Config{})
 	if err != nil {
+		logger.Error(err.Error())
 		return err
 	}
 
 	sqlDB, err := db.DB()
 	if err != nil {
+		logger.Error(err.Error())
 		return err
 	}
 
@@ -50,6 +54,7 @@ func InitDatabase(path string) error {
 
 	err = sqlDB.Ping()
 	if err != nil {
+		logger.Error(err.Error())
 		return err
 	}
 	db.AutoMigrate(&LicenseInfo{}, &DelMEMOMintInfo{}, &DelMEMOTransferInfo{}, &RedeemInfo{}, &NodeInfo{}, &NodeDailyDelegation{})

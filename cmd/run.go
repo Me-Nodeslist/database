@@ -9,22 +9,14 @@ import (
 	"syscall"
 
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/gin-gonic/gin"
 	"github.com/urfave/cli/v2"
 
 	"github.com/Me-Nodeslist/database/database"
 	"github.com/Me-Nodeslist/database/dumper"
+	"github.com/Me-Nodeslist/database/server"
 )
 
-var DelegationServerCmd = &cli.Command{
-	Name:  "server",
-	Usage: "node-delegation server",
-	Subcommands: []*cli.Command{
-		serverRunCmd,
-	},
-}
-
-var serverRunCmd = &cli.Command{
+var ServerRunCmd = &cli.Command{
 	Name:  "run",
 	Usage: "run node-delegation server",
 	Flags: []cli.Flag{
@@ -79,7 +71,7 @@ var serverRunCmd = &cli.Command{
 		cctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
 
-		err := database.InitDatabase("~/.nodedelegation-"+chain)
+		err := database.InitDatabase("~/.nodedelegation-" + chain)
 		if err != nil {
 			return err
 		}
@@ -95,9 +87,9 @@ var serverRunCmd = &cli.Command{
 		}
 		go dumper.SubscribeEvents(cctx)
 
-		srv, err := NewLightServer(endPoint)
+		srv, err := server.NewServer(endPoint)
 		if err != nil {
-			log.Fatalf("new store node server: %s\n", err)
+			log.Fatalf("new node-delegation server: %s\n", err)
 		}
 
 		go func() {
@@ -119,19 +111,4 @@ var serverRunCmd = &cli.Command{
 
 		return nil
 	},
-}
-
-func NewLightServer(endpoint string) (*http.Server, error) {
-	gin.SetMode(gin.ReleaseMode)
-	router := gin.Default()
-
-	router.MaxMultipartMemory = 8 << 20 // 8 MiB
-	router.GET("/", func(c *gin.Context) {
-		c.String(http.StatusOK, "Welcome Node-Delegation Server!")
-	})
-
-	return &http.Server{
-		Addr:    endpoint,
-		Handler: router,
-	}, nil
 }

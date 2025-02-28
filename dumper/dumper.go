@@ -195,7 +195,7 @@ func (d *Dumper) Dump() error {
 		}
 		if err != nil {
 			logger.Error(err.Error())
-			break
+			continue
 		}
 	}
 
@@ -226,7 +226,7 @@ func (d *Dumper) Dump() error {
 		}
 		if err != nil {
 			logger.Error(err.Error())
-			break
+			continue
 		}
 	}
 
@@ -247,7 +247,31 @@ func (d *Dumper) Dump() error {
 		}
 		if err != nil {
 			logger.Error(err.Error())
-			break
+			continue
+		}
+	}
+
+	for _, event := range eventsDelegation {
+		eventName, ok1 := d.eventNameMap[event.Topics[0]]
+		if !ok1 {
+			continue
+		}
+		switch eventName {
+		case "NodeRegister":
+			logger.Info("Handle Delegation NodeRegister event")
+			block, _ := client.BlockByNumber(context.Background(), big.NewInt(int64(event.BlockNumber)))
+			nodeInfo, err := d.getNodeInfo(client, event)
+			if err != nil {
+				logger.Error(err.Error())
+				continue
+			}
+			err = d.HandleNodeRegister(event, block.Time(), &nodeInfo)
+			if err != nil {
+				logger.Error(err.Error())
+				continue
+			}
+		default:
+			continue
 		}
 	}
 
@@ -282,26 +306,20 @@ func (d *Dumper) Dump() error {
 		case "ClaimReward":
 			logger.Info("Handle Delegation ClaimReward event")
 			err = d.HandleClaimReward(event)
-		case "NodeRegister":
-			logger.Info("Handle Delegation NodeRegister event")
-			block, _ := client.BlockByNumber(context.Background(), big.NewInt(int64(event.BlockNumber)))
-			nodeInfo, err := d.getNodeInfo(client, event)
-			if err != nil {
-				logger.Error(err.Error())
-				continue
-			}
-			err = d.HandleNodeRegister(event, block.Time(), &nodeInfo)
 		default:
 			continue
 		}
 		if err != nil {
 			logger.Error(err.Error())
-			break
+			continue
 		}
 	}
 
 	if toBlock.Cmp(d.blockNumber) == 1 {
-		database.SetBlockNumber(toBlock.Int64())
+		err = database.SetBlockNumber(toBlock.Int64())
+		if err != nil {
+			logger.Error(err.Error())
+		}
 	}
 
 	return nil
@@ -319,7 +337,7 @@ func (d *Dumper) unpack(log types.Log, contractIndex uint8, out interface{}) err
 	return abi.ParseTopics(out, indexed, log.Topics[1:])
 }
 
-func (d *Dumper) getNodeInfo(client *ethclient.Client, log types.Log) (database.NodeInfoOnChain,error) {
+func (d *Dumper) getNodeInfo(client *ethclient.Client, log types.Log) (database.NodeInfoOnChain, error) {
 	var nodeInfo database.NodeInfoOnChain
 	node, err := d.GetNodeAddr(log)
 	if err != nil {

@@ -10,7 +10,7 @@ import (
 
 func main() {
 	local := make([]*cli.Command, 0, 2)
-	local = append(local, cmd.DelegationServerCmd, cmd.VersionCmd)
+	local = append(local, cmd.ServerRunCmd, cmd.VersionCmd)
 	app := cli.App{
 		Commands: local,
 		Flags: []cli.Flag{

@@ -8,38 +8,38 @@ import (
 )
 
 type NodeInfoOnChain struct {
-	Id uint32
-	Active bool
-	LastConfirmDate uint32
-	CommissionRate uint8
-	Recipient common.Address
-	SelfTotalRewards *big.Int
-	SelfClaimedRewards *big.Int
-	DelegationRewards *big.Int
+	Id                         uint32
+	Active                     bool
+	LastConfirmDate            uint32
+	CommissionRate             uint8
+	Recipient                  common.Address
+	SelfTotalRewards           *big.Int
+	SelfClaimedRewards         *big.Int
+	DelegationRewards          *big.Int
 	CommissionRateLastModifyAt *big.Int
 }
 type NodeInfo struct {
 	gorm.Model
-	NodeID       uint32 `gorm:"uniqueIndex;column:nodeid"`
-	NodeAddress         string `gorm:"uniqueIndex"`
-	Recipient     string
-	Active bool
-	CommissionRate uint8
-	DelegationAmount uint16
-	SelfTotalReward string
-	SelfWithdrawedReward string
-	DelegationReward string
+	NodeID                     uint32 `gorm:"uniqueIndex;column:nodeid"`
+	NodeAddress                string `gorm:"uniqueIndex"`
+	Recipient                  string
+	Active                     bool
+	CommissionRate             uint8
+	DelegationAmount           uint16
+	SelfTotalReward            string
+	SelfWithdrawedReward       string
+	DelegationReward           string
 	CommissionRateLastModifyAt string
-	RegisterDate string
-	OnlineDays string
-	OnlineDays_RecentMonth uint8
-	OnlineDays_RecentWeek uint8
+	RegisterDate               string
+	OnlineDays                 int64
+	OnlineDays_RecentMonth     int64
+	OnlineDays_RecentWeek      int64
 }
 
 type NodeDailyDelegation struct {
 	gorm.Model
-	NodeAddress string
-	Date uint16
+	NodeAddress      string
+	Date             uint16
 	DelegationAmount uint16
 }
 
@@ -137,6 +137,29 @@ func GetNodeDailyDelegation(nodeAddr common.Address, date uint16) (NodeDailyDele
 		return NodeDailyDelegation{}, err
 	}
 	return nodeDailyDelegation, nil
+}
+
+func GetNodeRecentOnlineDays(nodeAddr common.Address, date uint16) (int64, int64, error) {
+	var length_month int64
+	var length_week int64
+	node := nodeAddr.Hex()
+	recentMonth := uint16(0)
+	recentWeek := uint16(0)
+	if date > 7 {
+		recentWeek = date - 7
+	}
+	if date > 30 {
+		recentMonth = date - 30
+	}
+	err := GlobalDataBase.Model(&NodeDailyDelegation{}).Where("node_address = ? AND date >= ?", node, recentMonth).Count(&length_month).Error
+	if err != nil {
+		return length_month, length_week, err
+	}
+	err = GlobalDataBase.Model(&NodeDailyDelegation{}).Where("node_address = ? AND date >= ?", node, recentWeek).Count(&length_week).Error
+	if err != nil {
+		return length_month, length_week, err
+	}
+	return length_month, length_week, nil
 }
 
 func GetGlobalDailyDelegation(date uint16) (uint32, error) {

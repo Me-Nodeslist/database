@@ -44,8 +44,8 @@ type ClaimRewardEvent struct {
 }
 
 type NodeRegisterEvent struct {
-	Node   common.Address
-	Recipient common.Address
+	Node           common.Address
+	Recipient      common.Address
 	CommissionRate uint8
 }
 
@@ -78,7 +78,7 @@ func (d *Dumper) HandleNodeWithdraw(log types.Log) error {
 	}
 	value, ok := new(big.Int).SetString(info.SelfWithdrawedReward, 10)
 	if !ok {
-		return errors.New("Transfer string to big.Int error")
+		return errors.New("transfer string to big.Int error")
 	}
 	tr := info.SelfTotalReward
 	dr := info.DelegationReward
@@ -104,16 +104,36 @@ func (d *Dumper) HandleConfirmNodeReward(log types.Log) error {
 	if err != nil {
 		return err
 	}
-	wr := info.SelfWithdrawedReward
 
 	// store info to db
-	info = database.NodeInfo{
-		NodeAddress:          out.Node.Hex(),
-		SelfTotalReward:      out.SelfTotalRewards.String(),
-		SelfWithdrawedReward: wr,
-		DelegationReward:     out.DelegationRewards.String(),
+	info.SelfTotalReward = out.SelfTotalRewards.String()
+	info.DelegationReward = out.DelegationRewards.String()
+	err = info.UpdateNodeRewardInfo()
+	if err != nil {
+		return err
 	}
-	return info.UpdateNodeRewardInfo()
+
+	// update license reward
+	licenseInfos, err := database.GetLicenseInfosByNode(out.Node, int(0), int(info.DelegationAmount))
+	if err != nil {
+		return err
+	}
+	for _, licenseInfo := range licenseInfos {
+		initialReward, ok := new(big.Int).SetString(licenseInfo.InitialReward, 10)
+		if !ok {
+			continue
+		}
+		totalReward, ok := new(big.Int).SetString(licenseInfo.TotalReward, 10)
+		if !ok {
+			continue
+		}
+		addReward := new(big.Int).Sub(out.DelegationRewards, initialReward)
+		totalReward = totalReward.Add(totalReward, addReward)
+		licenseInfo.TotalReward = totalReward.String()
+		licenseInfo.InitialReward = info.DelegationReward
+		licenseInfo.UpdateLicenseReward()
+	}
+	return nil
 }
 
 func (d *Dumper) HandleNodeDailyDelegations(log types.Log) error {
@@ -131,14 +151,42 @@ func (d *Dumper) HandleNodeDailyDelegations(log types.Log) error {
 	}
 	_, err = database.GetNodeDailyDelegation(out.Node, info.Date)
 	if err == nil { // exist
-		return info.UpdateNodeDailyDelegation()
+		err = info.UpdateNodeDailyDelegation()
+	} else {
+		err = info.CreateNodeDailyDelegation()
 	}
-	return info.CreateNodeDailyDelegation()
+	if err != nil {
+		return err
+	}
+
+	// online days
+	nodeInfo, err := database.GetNodeInfoByNodeAddress(out.Node)
+	if err != nil {
+		return err
+	}
+	length_month, length_week, err := database.GetNodeRecentOnlineDays(out.Node, info.Date)
+	if err != nil {
+		return err
+	}
+	nodeInfo.OnlineDays++
+	nodeInfo.OnlineDays_RecentMonth = length_month
+	nodeInfo.OnlineDays_RecentWeek = length_week
+	return nodeInfo.UpdateNodeOnlineDays()
 }
 
 func (d *Dumper) HandleDelegate(log types.Log) error {
 	var out DelegateEvent
 	err := d.unpack(log, 0, &out)
+	if err != nil {
+		return err
+	}
+
+	licenseInfo := database.LicenseInfo{
+		TokenID:       out.TokenID.String(),
+		Delegated:     true,
+		DelegatedNode: out.Node.Hex(),
+	}
+	err = licenseInfo.UpdateLicenseDelegation()
 	if err != nil {
 		return err
 	}
@@ -155,16 +203,7 @@ func (d *Dumper) HandleDelegate(log types.Log) error {
 		DelegationAmount: amount,
 		Active:           true,
 	}
-	err = info.UpdateNodeDelegationAmount()
-	if err != nil {
-		return err
-	}
-	licenseInfo := database.LicenseInfo{
-		TokenID:       out.TokenID.String(),
-		Delegated:     true,
-		DelegatedNode: out.Node.Hex(),
-	}
-	return licenseInfo.UpdateLicenseDelegation()
+	return info.UpdateNodeDelegationAmount()
 }
 
 func (d *Dumper) HandleUndelegate(log types.Log) error {
@@ -274,7 +313,7 @@ func (d *Dumper) HandleClaimReward(log types.Log) error {
 	}
 	amount, ok := new(big.Int).SetString(info.WithdrawedReward, 10)
 	if !ok {
-		return errors.New("Transfer string to big.Int error")
+		return errors.New("transfer string to big.Int error")
 	}
 	amount = amount.Add(amount, out.Amount)
 
@@ -301,8 +340,13 @@ func (d *Dumper) HandleNodeRegister(log types.Log, time uint64, nodeInfo *databa
 
 	// store info to db
 	info := database.NodeInfo{
-		NodeID: nodeInfo.Id,
-		NodeAddress: out.Node.Hex(),
+		NodeID:                     nodeInfo.Id,
+		NodeAddress:                out.Node.Hex(),
+		Recipient:                  out.Recipient.Hex(),
+		Active:                     nodeInfo.Active,
+		CommissionRate:             out.CommissionRate,
+		CommissionRateLastModifyAt: nodeInfo.CommissionRateLastModifyAt.String(),
+		RegisterDate:               strconv.FormatUint(time, 10),
 	}
 	return info.CreateNodeInfo()
 }
