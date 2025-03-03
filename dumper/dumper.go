@@ -2,8 +2,10 @@ package dumper
 
 import (
 	"context"
+	"log"
 	"math/big"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -51,7 +53,12 @@ func NewDumper(chain string, addrs *ContractAddress) (dumper *Dumper, err error)
 
 	dumper.contractAddress = []common.Address{addrs.LicenseNFT, addrs.DelMEMO, addrs.Settlement, addrs.Delegation}
 
-	licenseNFTABI, err := os.ReadFile("../abi/LicenseNFT.abi")
+	projectDir, err := filepath.Abs(".")
+	if err != nil {
+		log.Fatal(err)
+	}
+	filePath := filepath.Join(projectDir, "abi", "LicenseNFT.abi")
+	licenseNFTABI, err := os.ReadFile(filePath)
 	if err != nil {
 		logger.Error("Failed to read licenseNFT abi file, ", err)
 		return dumper, err
@@ -61,7 +68,8 @@ func NewDumper(chain string, addrs *ContractAddress) (dumper *Dumper, err error)
 		return dumper, err
 	}
 
-	delMEMOABI, err := os.ReadFile("../abi/DelMEMO.abi")
+	filePath = filepath.Join(projectDir, "abi", "DelMEMO.abi")
+	delMEMOABI, err := os.ReadFile(filePath)
 	if err != nil {
 		logger.Error("Failed to read delMEMO abi file, ", err)
 		return dumper, err
@@ -71,7 +79,8 @@ func NewDumper(chain string, addrs *ContractAddress) (dumper *Dumper, err error)
 		return dumper, err
 	}
 
-	settlementABI, err := os.ReadFile("../abi/Settlement.abi")
+	filePath = filepath.Join(projectDir, "abi", "Settlement.abi")
+	settlementABI, err := os.ReadFile(filePath)
 	if err != nil {
 		logger.Error("Failed to read settlement abi file, ", err)
 		return dumper, err
@@ -81,7 +90,8 @@ func NewDumper(chain string, addrs *ContractAddress) (dumper *Dumper, err error)
 		return dumper, err
 	}
 
-	delegationABI, err := os.ReadFile("../abi/Delegation.abi")
+	filePath = filepath.Join(projectDir, "abi", "Delegation.abi")
+	delegationABI, err := os.ReadFile(filePath)
 	if err != nil {
 		logger.Error("Failed to read delegation abi file, ", err)
 		return dumper, err
