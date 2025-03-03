@@ -16,6 +16,8 @@ type Router struct {
 	*gin.Engine
 }
 
+var logger = logs.Logger("server")
+
 func NewServer(endpoint string) (*http.Server, error) {
 	log.Println("Begin listen and server...")
 	gin.SetMode(gin.ReleaseMode)
