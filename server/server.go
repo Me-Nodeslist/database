@@ -18,6 +18,12 @@ type Router struct {
 
 var logger = logs.Logger("server")
 
+// @title NodeList API
+// @version 1.0
+// @description This is s server for NodeList program
+
+// @host localhost:8088
+// @BasePath /v1
 func NewServer(endpoint string) (*http.Server, error) {
 	log.Println("Begin listen and server...")
 	gin.SetMode(gin.ReleaseMode)
@@ -56,12 +62,11 @@ func (r Router) registerLicenseRouter() {
 func (r Router) registerNodeRouter() {
 	r.GET("/node/amount", GetNodeAmount())
 	r.GET("/node/info", GetNodeInfos())                                 // page
-	r.GET("/node/info/owner/:address", GetNodeInfosOfOwner())           // page
+	r.GET("/node/info/owner/:address", GetNodeInfoOfOwner())
 	r.GET("/node/info/delegation/:address", GetNodeInfosOfdelegation()) // page
 }
 
 func (r Router) registerRewardRouter() {
 	r.GET("/reward/info/:address", GetRewardInfo())
 	r.GET("/reward/redeem/info/:address", GetRedeemInfo())
-	r.GET("/reward/withdraw/info/:address", GetWithdrawInfo())
 }

@@ -93,6 +93,7 @@ var ServerRunCmd = &cli.Command{
 		}
 
 		go func() {
+			log.Println("Start server and listen...")
 			if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 				log.Fatalf("listen: %s\n", err)
 			}
