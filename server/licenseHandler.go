@@ -12,7 +12,7 @@ import (
 type LicenseInfo struct {
 	TokenID          string `json:"tokenID"`
 	Owner            string `json:"owner"`
-	Delegated        bool `json:"delegated"`
+	Delegated        bool   `json:"delegated"`
 	DelegatedNode    string `json:"delegatedNode"`
 	TotalReward      string `json:"totalReward"`
 	InitialReward    string `json:"initialReward"`
@@ -61,7 +61,7 @@ func GetLicenseAmount() gin.HandlerFunc {
 // @Tags License
 // @Accept json
 // @Produce json
-// @Param address path string, owner address(an ethereum address with prefix '0x')
+// @Param address path string true "owner address(an ethereum address with prefix '0x')""
 // @Success 200 {object} map[string]int "return amount"
 // @Failure 400 {object} map[string]string "request parameter error"
 // @Failure 500 {object} map[string]string "internal server error"
@@ -89,9 +89,9 @@ func GetLicenseAmountOfOwner() gin.HandlerFunc {
 // @Tags License
 // @Accept json
 // @Produce json
-// @Param address path string true, owner address(an ethereum address with prefix '0x')
-// @Param offset query int false, "paging start index (default 0)"
-// @Param limit query int false, "number of items to return per page(default 10)"
+// @Param address path string true "owner address(an ethereum address with prefix '0x')""
+// @Param offset query int false "paging start index (default 0)"
+// @Param limit query int false  "number of items to return per page(default 10)"
 // @Success 200 {object}  LicenseInfos "return license info list successfully"
 // @Failure 400 {object} map[string]string "request parameter error"
 // @Failure 500 {object} map[string]string "internal server error"

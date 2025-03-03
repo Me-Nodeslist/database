@@ -154,9 +154,9 @@ func GetUnClaimedAmountByInitiator(initiatorAddr common.Address) (*big.Int, erro
 	return res, nil
 }
 
-func GetUnClaimedRedeemIDsByInitiator(initiatorAddr common.Address) ([]*big.Int, error) {
+func GetUnClaimedRedeemIDsByInitiator(initiatorAddr common.Address) ([]string, error) {
 	var infos []RedeemInfo
-	res := make([]*big.Int, 0)
+	res := make([]string, 0)
 	initiator := initiatorAddr.Hex()
 	now := time.Now().Unix()
 	err := GlobalDataBase.Model(&RedeemInfo{}).Where("initiator = ? AND canceled = ? AND unlock_date <= ? AND claimed = ?", initiator, false, now, false).Find(&infos).Error
@@ -168,7 +168,7 @@ func GetUnClaimedRedeemIDsByInitiator(initiatorAddr common.Address) ([]*big.Int,
 		if !ok {
 			continue
 		}
-		res = append(res, redeemID)
+		res = append(res, redeemID.String())
 	}
 	return res, nil
 }

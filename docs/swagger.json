@@ -3,5 +3,586 @@
     "info": {
         "contact": {}
     },
-    "paths": {}
+    "paths": {
+        "/license/amount": {
+            "get": {
+                "description": "Get all license amount that have been sold, and all license amount that have been delegated",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "License"
+                ],
+                "summary": "Get all license amount and delegated license amount",
+                "responses": {
+                    "200": {
+                        "description": "return the amount",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "integer"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/license/amount/owner/{address}": {
+            "get": {
+                "description": "Get the license amount that the wallet address has purchased",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "License"
+                ],
+                "summary": "Get all license amount of the owner",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "owner address(an ethereum address with prefix '0x')",
+                        "name": "address",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "return amount",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "integer"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "request parameter error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/license/info/owner/{address}": {
+            "get": {
+                "description": "Query the license information owned by the owner through the wallet address, support paging",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "License"
+                ],
+                "summary": "Get the license information of the specified owner in pages",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "owner address(an ethereum address with prefix '0x')",
+                        "name": "address",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "paging start index (default 0)",
+                        "name": "offset",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "number of items to return per page(default 10)",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "return license info list successfully",
+                        "schema": {
+                            "$ref": "#/definitions/server.LicenseInfos"
+                        }
+                    },
+                    "400": {
+                        "description": "request parameter error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/node/amount": {
+            "get": {
+                "description": "Query the amount of the registered nodes in nodelist server",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Node"
+                ],
+                "summary": "Get the amount of all registered nodes",
+                "responses": {
+                    "200": {
+                        "description": "return the nodes amount successfully",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "integer"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/node/info": {
+            "get": {
+                "description": "Query the information of all nodes, support paging",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Node"
+                ],
+                "summary": "Get all nodes information(paging)",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "paging start index (default 0)",
+                        "name": "offset",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "number of items to return per page(default 10)",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "return node info list successfully",
+                        "schema": {
+                            "$ref": "#/definitions/server.NodeInfos"
+                        }
+                    },
+                    "400": {
+                        "description": "request parameter error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/node/info/delegation/{address}": {
+            "get": {
+                "description": "Query the information of the nodes that the specific owner has delegated his licenses to",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Node"
+                ],
+                "summary": "Get the nodes information delegated by a specific owner",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "owner address(an ethereum address with prefix '0x')",
+                        "name": "address",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "return delegated nodes information successfully",
+                        "schema": {
+                            "$ref": "#/definitions/server.NodeInfos"
+                        }
+                    },
+                    "400": {
+                        "description": "request parameter error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/node/info/owner/{address}": {
+            "get": {
+                "description": "Query the node information through the owner address who owned the node",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Node"
+                ],
+                "summary": "Get the node information of the owner",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "owner address(an ethereum address with prefix '0x')",
+                        "name": "address",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "return the node information successfully",
+                        "schema": {
+                            "$ref": "#/definitions/server.NodeInfo"
+                        }
+                    },
+                    "500": {
+                        "description": "internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/reward/info/{address}": {
+            "get": {
+                "description": "Query all license rewards and node reward information of the specific owner, include total and withdrawed",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Reward"
+                ],
+                "summary": "Get the account's reward information",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "owner address(an ethereum address with prefix '0x')",
+                        "name": "address",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "return reward information successfully",
+                        "schema": {
+                            "$ref": "#/definitions/server.RewardInfo"
+                        }
+                    },
+                    "400": {
+                        "description": "request parameter error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/reward/redeem/info/{address}": {
+            "get": {
+                "description": "Query all locked, unlocked, withdrawed MEMOs and redeeming DelMEMOs of specific owner, as well as unclaimed redeemIDs",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Redeem"
+                ],
+                "summary": "Get the account's redeem information",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "owner address(an ethereum address with prefix '0x')",
+                        "name": "address",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "return redeem information successfully",
+                        "schema": {
+                            "$ref": "#/definitions/server.RedeemInfo"
+                        }
+                    },
+                    "400": {
+                        "description": "request parameter error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "server.LicenseInfo": {
+            "type": "object",
+            "properties": {
+                "delegated": {
+                    "type": "boolean"
+                },
+                "delegatedNode": {
+                    "type": "string"
+                },
+                "initialReward": {
+                    "type": "string"
+                },
+                "owner": {
+                    "type": "string"
+                },
+                "tokenID": {
+                    "type": "string"
+                },
+                "totalReward": {
+                    "type": "string"
+                },
+                "withdrawedReward": {
+                    "type": "string"
+                }
+            }
+        },
+        "server.LicenseInfos": {
+            "type": "object",
+            "properties": {
+                "infos": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/server.LicenseInfo"
+                    }
+                }
+            }
+        },
+        "server.NodeInfo": {
+            "type": "object",
+            "properties": {
+                "active": {
+                    "type": "boolean"
+                },
+                "commissionRate": {
+                    "type": "integer"
+                },
+                "commissionRateLastModifyAt": {
+                    "type": "string"
+                },
+                "delegationAmount": {
+                    "type": "integer"
+                },
+                "delegationReward": {
+                    "type": "string"
+                },
+                "nodeAddress": {
+                    "type": "string"
+                },
+                "nodeID": {
+                    "type": "integer"
+                },
+                "onlineDays": {
+                    "type": "integer"
+                },
+                "onlineDays_RecentMonth": {
+                    "type": "integer"
+                },
+                "onlineDays_RecentWeek": {
+                    "type": "integer"
+                },
+                "recipient": {
+                    "type": "string"
+                },
+                "registerDate": {
+                    "type": "string"
+                },
+                "selfTotalReward": {
+                    "type": "string"
+                },
+                "selfWithdrawedReward": {
+                    "type": "string"
+                }
+            }
+        },
+        "server.NodeInfos": {
+            "type": "object",
+            "properties": {
+                "infos": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/server.NodeInfo"
+                    }
+                }
+            }
+        },
+        "server.RedeemInfo": {
+            "type": "object",
+            "properties": {
+                "lockedMEMOAmount": {
+                    "type": "string",
+                    "example": "500"
+                },
+                "redeemingDelMEMOAmount": {
+                    "type": "string",
+                    "example": "1000"
+                },
+                "unclaimedRedeemIDs": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": [
+                        "['1'",
+                        " '2']"
+                    ]
+                },
+                "unlockedMEMOAmount": {
+                    "type": "string",
+                    "example": "1500"
+                },
+                "withdrawedMEMOAmount": {
+                    "type": "string",
+                    "example": "800"
+                }
+            }
+        },
+        "server.RewardInfo": {
+            "type": "object",
+            "properties": {
+                "nodeReward": {
+                    "type": "string",
+                    "example": "200000"
+                },
+                "totalLicenseRewards": {
+                    "type": "string",
+                    "example": "1000000"
+                },
+                "totalWithdrawedLicenseRewards": {
+                    "type": "string",
+                    "example": "500000"
+                },
+                "withdrawedNodeReward": {
+                    "type": "string",
+                    "example": "100000"
+                }
+            }
+        }
+    }
 }

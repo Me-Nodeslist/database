@@ -1,4 +1,394 @@
+definitions:
+  server.LicenseInfo:
+    properties:
+      delegated:
+        type: boolean
+      delegatedNode:
+        type: string
+      initialReward:
+        type: string
+      owner:
+        type: string
+      tokenID:
+        type: string
+      totalReward:
+        type: string
+      withdrawedReward:
+        type: string
+    type: object
+  server.LicenseInfos:
+    properties:
+      infos:
+        items:
+          $ref: '#/definitions/server.LicenseInfo'
+        type: array
+    type: object
+  server.NodeInfo:
+    properties:
+      active:
+        type: boolean
+      commissionRate:
+        type: integer
+      commissionRateLastModifyAt:
+        type: string
+      delegationAmount:
+        type: integer
+      delegationReward:
+        type: string
+      nodeAddress:
+        type: string
+      nodeID:
+        type: integer
+      onlineDays:
+        type: integer
+      onlineDays_RecentMonth:
+        type: integer
+      onlineDays_RecentWeek:
+        type: integer
+      recipient:
+        type: string
+      registerDate:
+        type: string
+      selfTotalReward:
+        type: string
+      selfWithdrawedReward:
+        type: string
+    type: object
+  server.NodeInfos:
+    properties:
+      infos:
+        items:
+          $ref: '#/definitions/server.NodeInfo'
+        type: array
+    type: object
+  server.RedeemInfo:
+    properties:
+      lockedMEMOAmount:
+        example: "500"
+        type: string
+      redeemingDelMEMOAmount:
+        example: "1000"
+        type: string
+      unclaimedRedeemIDs:
+        example:
+        - '[''1'''
+        - ' ''2'']'
+        items:
+          type: string
+        type: array
+      unlockedMEMOAmount:
+        example: "1500"
+        type: string
+      withdrawedMEMOAmount:
+        example: "800"
+        type: string
+    type: object
+  server.RewardInfo:
+    properties:
+      nodeReward:
+        example: "200000"
+        type: string
+      totalLicenseRewards:
+        example: "1000000"
+        type: string
+      totalWithdrawedLicenseRewards:
+        example: "500000"
+        type: string
+      withdrawedNodeReward:
+        example: "100000"
+        type: string
+    type: object
 info:
   contact: {}
-paths: {}
+paths:
+  /license/amount:
+    get:
+      consumes:
+      - application/json
+      description: Get all license amount that have been sold, and all license amount
+        that have been delegated
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: return the amount
+          schema:
+            additionalProperties:
+              type: integer
+            type: object
+        "500":
+          description: internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get all license amount and delegated license amount
+      tags:
+      - License
+  /license/amount/owner/{address}:
+    get:
+      consumes:
+      - application/json
+      description: Get the license amount that the wallet address has purchased
+      parameters:
+      - description: owner address(an ethereum address with prefix '0x')
+        in: path
+        name: address
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: return amount
+          schema:
+            additionalProperties:
+              type: integer
+            type: object
+        "400":
+          description: request parameter error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get all license amount of the owner
+      tags:
+      - License
+  /license/info/owner/{address}:
+    get:
+      consumes:
+      - application/json
+      description: Query the license information owned by the owner through the wallet
+        address, support paging
+      parameters:
+      - description: owner address(an ethereum address with prefix '0x')
+        in: path
+        name: address
+        required: true
+        type: string
+      - description: paging start index (default 0)
+        in: query
+        name: offset
+        type: integer
+      - description: number of items to return per page(default 10)
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: return license info list successfully
+          schema:
+            $ref: '#/definitions/server.LicenseInfos'
+        "400":
+          description: request parameter error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get the license information of the specified owner in pages
+      tags:
+      - License
+  /node/amount:
+    get:
+      consumes:
+      - application/json
+      description: Query the amount of the registered nodes in nodelist server
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: return the nodes amount successfully
+          schema:
+            additionalProperties:
+              type: integer
+            type: object
+        "500":
+          description: internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get the amount of all registered nodes
+      tags:
+      - Node
+  /node/info:
+    get:
+      consumes:
+      - application/json
+      description: Query the information of all nodes, support paging
+      parameters:
+      - description: paging start index (default 0)
+        in: query
+        name: offset
+        type: integer
+      - description: number of items to return per page(default 10)
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: return node info list successfully
+          schema:
+            $ref: '#/definitions/server.NodeInfos'
+        "400":
+          description: request parameter error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get all nodes information(paging)
+      tags:
+      - Node
+  /node/info/delegation/{address}:
+    get:
+      consumes:
+      - application/json
+      description: Query the information of the nodes that the specific owner has
+        delegated his licenses to
+      parameters:
+      - description: owner address(an ethereum address with prefix '0x')
+        in: path
+        name: address
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: return delegated nodes information successfully
+          schema:
+            $ref: '#/definitions/server.NodeInfos'
+        "400":
+          description: request parameter error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get the nodes information delegated by a specific owner
+      tags:
+      - Node
+  /node/info/owner/{address}:
+    get:
+      consumes:
+      - application/json
+      description: Query the node information through the owner address who owned
+        the node
+      parameters:
+      - description: owner address(an ethereum address with prefix '0x')
+        in: path
+        name: address
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: return the node information successfully
+          schema:
+            $ref: '#/definitions/server.NodeInfo'
+        "500":
+          description: internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get the node information of the owner
+      tags:
+      - Node
+  /reward/info/{address}:
+    get:
+      consumes:
+      - application/json
+      description: Query all license rewards and node reward information of the specific
+        owner, include total and withdrawed
+      parameters:
+      - description: owner address(an ethereum address with prefix '0x')
+        in: path
+        name: address
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: return reward information successfully
+          schema:
+            $ref: '#/definitions/server.RewardInfo'
+        "400":
+          description: request parameter error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get the account's reward information
+      tags:
+      - Reward
+  /reward/redeem/info/{address}:
+    get:
+      consumes:
+      - application/json
+      description: Query all locked, unlocked, withdrawed MEMOs and redeeming DelMEMOs
+        of specific owner, as well as unclaimed redeemIDs
+      parameters:
+      - description: owner address(an ethereum address with prefix '0x')
+        in: path
+        name: address
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: return redeem information successfully
+          schema:
+            $ref: '#/definitions/server.RedeemInfo'
+        "400":
+          description: request parameter error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get the account's redeem information
+      tags:
+      - Redeem
 swagger: "2.0"

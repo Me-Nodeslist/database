@@ -11,17 +11,17 @@ import (
 )
 
 type RewardInfo struct {
-	TotalLicenseRewards          *big.Int `json:"totalLicenseRewards" example:"1000000"`
-	TotalWithdrawedLicenseRewards *big.Int `json:"totalWithdrawedLicenseRewards" example:"500000"`
-	NodeReward                   *big.Int `json:"nodeReward" example:"200000"`
-	WithdrawedNodeReward         *big.Int `json:"withdrawedNodeReward" example:"100000"`
+	TotalLicenseRewards          string `json:"totalLicenseRewards" example:"1000000"`
+	TotalWithdrawedLicenseRewards string `json:"totalWithdrawedLicenseRewards" example:"500000"`
+	NodeReward                   string `json:"nodeReward" example:"200000"`
+	WithdrawedNodeReward         string `json:"withdrawedNodeReward" example:"100000"`
 }
 
 type RedeemInfo struct {
-	RedeemingDelMEMOAmount   *big.Int   `json:"redeemingDelMEMOAmount" example:"1000"`
-	LockedMEMOAmount         *big.Int   `json:"lockedMEMOAmount" example:"500"`
-	UnlockedMEMOAmount       *big.Int   `json:"unlockedMEMOAmount" example:"1500"`
-	WithdrawedMEMOAmount     *big.Int   `json:"withdrawedMEMOAmount" example:"800"`
+	RedeemingDelMEMOAmount   string   `json:"redeemingDelMEMOAmount" example:"1000"`
+	LockedMEMOAmount         string   `json:"lockedMEMOAmount" example:"500"`
+	UnlockedMEMOAmount       string   `json:"unlockedMEMOAmount" example:"1500"`
+	WithdrawedMEMOAmount     string   `json:"withdrawedMEMOAmount" example:"800"`
 	UnclaimedRedeemIDs       []string   `json:"unclaimedRedeemIDs" example:"['1', '2']"`
 }
 
@@ -94,8 +94,8 @@ func GetRewardInfo() gin.HandlerFunc {
 
 		// return all rewards and all withdrawed rewards(withdraw delMEMO)
 		c.JSON(http.StatusOK, gin.H{
-			"totalLicenseRewards":           totalDelegationReward,
-			"totalWithdrawedLicenseRewards": totalWithdrawedDelegationReward,
+			"totalLicenseRewards":           totalDelegationReward.String(),
+			"totalWithdrawedLicenseRewards": totalWithdrawedDelegationReward.String(),
 			"nodeReward":                    nodeInfo.SelfTotalReward,
 			"withdrawedNodeReward":          nodeInfo.SelfWithdrawedReward,
 		})
@@ -169,10 +169,10 @@ func GetRedeemInfo() gin.HandlerFunc {
 
 		// return all rewards and all withdrawed rewards(withdraw delMEMO)
 		c.JSON(http.StatusOK, gin.H{
-			"redeemingDelMEMOAmount": redeemingAmount,
-			"lockedMEMOAmount":       lockedMemoAmount,
-			"unlockedMEMOAmount":     unlockedMemoAmount,
-			"withdrawedMEMOAmount":   withdrawedMemoAmount,
+			"redeemingDelMEMOAmount": redeemingAmount.String(),
+			"lockedMEMOAmount":       lockedMemoAmount.String(),
+			"unlockedMEMOAmount":     unlockedMemoAmount.String(),
+			"withdrawedMEMOAmount":   withdrawedMemoAmount.String(),
 			"unclaimedRedeemIDs":     redeemIDs,
 		})
 	}
