@@ -14,6 +14,12 @@ type DelMEMOTransfer struct {
 	Value *big.Int
 }
 
+type MintEvent struct {
+	Depositer  common.Address
+	Receiver    common.Address
+	Amount *big.Int
+}
+
 type RedeemEvent struct {
 	RedeemID    *big.Int
 	Initiator   common.Address
@@ -32,7 +38,7 @@ type ClaimEvent struct {
 }
 
 func (d *Dumper) HandleDelMemoMint(log types.Log) error {
-	var out DelMEMOTransfer
+	var out MintEvent
 	err := d.unpack(log, 0, &out)
 	if err != nil {
 		return err
@@ -40,9 +46,9 @@ func (d *Dumper) HandleDelMemoMint(log types.Log) error {
 
 	// store info to db
 	info := database.DelMEMOMintInfo{
-		Depositer: out.From.Hex(),
-		Receiver:  out.To.Hex(),
-		Amount:    out.Value.String(),
+		Depositer: out.Depositer.Hex(),
+		Receiver:  out.Receiver.Hex(),
+		Amount:    out.Amount.String(),
 	}
 	return info.CreateDelMEMOMintInfo()
 }

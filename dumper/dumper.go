@@ -326,7 +326,9 @@ func (d *Dumper) Dump() error {
 	}
 
 	if toBlock.Cmp(d.blockNumber) == 1 {
-		err = database.SetBlockNumber(toBlock.Int64())
+		newBlockNumber := new(big.Int).Add(toBlock, big.NewInt(1))
+		d.blockNumber = newBlockNumber
+		err = database.SetBlockNumber(newBlockNumber.Int64())
 		if err != nil {
 			logger.Error(err.Error())
 		}

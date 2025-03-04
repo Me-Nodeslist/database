@@ -34,7 +34,7 @@ type NodeDailyDelegationsEvent struct {
 
 type DelegateEvent struct {
 	TokenID *big.Int
-	Node    common.Address
+	To    common.Address
 }
 
 type ClaimRewardEvent struct {
@@ -184,14 +184,14 @@ func (d *Dumper) HandleDelegate(log types.Log) error {
 	licenseInfo := database.LicenseInfo{
 		TokenID:       out.TokenID.String(),
 		Delegated:     true,
-		DelegatedNode: out.Node.Hex(),
+		DelegatedNode: out.To.Hex(),
 	}
 	err = licenseInfo.UpdateLicenseDelegation()
 	if err != nil {
 		return err
 	}
 
-	info, err := database.GetNodeInfoByNodeAddress(out.Node)
+	info, err := database.GetNodeInfoByNodeAddress(out.To)
 	if err != nil {
 		return err
 	}
@@ -199,7 +199,7 @@ func (d *Dumper) HandleDelegate(log types.Log) error {
 
 	// store info to db
 	info = database.NodeInfo{
-		NodeAddress:      out.Node.Hex(),
+		NodeAddress:      out.To.Hex(),
 		DelegationAmount: amount,
 		Active:           true,
 	}
@@ -213,7 +213,7 @@ func (d *Dumper) HandleUndelegate(log types.Log) error {
 		return err
 	}
 
-	info, err := database.GetNodeInfoByNodeAddress(out.Node)
+	info, err := database.GetNodeInfoByNodeAddress(out.To)
 	if err != nil {
 		return err
 	}
@@ -225,7 +225,7 @@ func (d *Dumper) HandleUndelegate(log types.Log) error {
 
 	// store info to db
 	info = database.NodeInfo{
-		NodeAddress:      out.Node.Hex(),
+		NodeAddress:      out.To.Hex(),
 		DelegationAmount: amount,
 		Active:           active,
 	}
@@ -248,7 +248,7 @@ func (d *Dumper) HandleRedelegate(log types.Log) error {
 		return err
 	}
 
-	info, err := database.GetNodeInfoByNodeAddress(out.Node)
+	info, err := database.GetNodeInfoByNodeAddress(out.To)
 	if err != nil {
 		return err
 	}
@@ -295,7 +295,7 @@ func (d *Dumper) HandleRedelegate(log types.Log) error {
 	licenseInfo = database.LicenseInfo{
 		TokenID:       out.TokenID.String(),
 		Delegated:     true,
-		DelegatedNode: out.Node.Hex(),
+		DelegatedNode: out.To.Hex(),
 	}
 	return licenseInfo.UpdateLicenseDelegation()
 }
