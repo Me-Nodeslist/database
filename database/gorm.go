@@ -57,7 +57,7 @@ func InitDatabase(path string) error {
 		logger.Error(err.Error())
 		return err
 	}
-	db.AutoMigrate(&LicenseInfo{}, &DelMEMOMintInfo{}, &DelMEMOTransferInfo{}, &RedeemInfo{}, &NodeInfo{}, &NodeDailyDelegation{})
+	db.AutoMigrate(&DABlockNumber{}, &LicenseInfo{}, &DelMEMOMintInfo{}, &DelMEMOTransferInfo{}, &RedeemInfo{}, &NodeInfo{}, &NodeDailyDelegation{})
 	GlobalDataBase = db
 	return nil
 }
