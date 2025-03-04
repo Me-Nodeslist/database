@@ -20,7 +20,7 @@ type FoundationWithdrawEvent struct {
 
 func (d *Dumper) HandleSettlementRewardWithdraw(log types.Log) error {
 	var out RewardWithdrawEvent
-	err := d.unpack(log, 0, &out)
+	err := d.unpack(log, 2, &out)
 	if err != nil {
 		return err
 	}
@@ -35,7 +35,7 @@ func (d *Dumper) HandleSettlementRewardWithdraw(log types.Log) error {
 
 func (d *Dumper) HandleSettlementFoundationWithdraw(log types.Log) error {
 	var out FoundationWithdrawEvent
-	err := d.unpack(log, 0, &out)
+	err := d.unpack(log, 2, &out)
 	if err != nil {
 		return err
 	}

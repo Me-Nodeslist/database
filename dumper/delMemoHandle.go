@@ -39,7 +39,7 @@ type ClaimEvent struct {
 
 func (d *Dumper) HandleDelMemoMint(log types.Log) error {
 	var out MintEvent
-	err := d.unpack(log, 0, &out)
+	err := d.unpack(log, 1, &out)
 	if err != nil {
 		return err
 	}
@@ -55,7 +55,7 @@ func (d *Dumper) HandleDelMemoMint(log types.Log) error {
 
 func (d *Dumper) HandleDelMemoTransfer(log types.Log) error {
 	var out DelMEMOTransfer
-	err := d.unpack(log, 0, &out)
+	err := d.unpack(log, 1, &out)
 	if err != nil {
 		return err
 	}
@@ -76,7 +76,7 @@ func (d *Dumper) HandleDelMemoTransfer(log types.Log) error {
 
 func (d *Dumper) HandleDelMemoRedeem(log types.Log, time uint64) error {
 	var out RedeemEvent
-	err := d.unpack(log, 0, &out)
+	err := d.unpack(log, 1, &out)
 	if err != nil {
 		return err
 	}
@@ -95,7 +95,7 @@ func (d *Dumper) HandleDelMemoRedeem(log types.Log, time uint64) error {
 
 func (d *Dumper) HandleDelMemoCancelRedeem(log types.Log) error {
 	var out CancelRedeemEvent
-	err := d.unpack(log, 0, &out)
+	err := d.unpack(log, 1, &out)
 	if err != nil {
 		return err
 	}
@@ -110,7 +110,7 @@ func (d *Dumper) HandleDelMemoCancelRedeem(log types.Log) error {
 
 func (d *Dumper) HandleDelMemoClaim(log types.Log) error {
 	var out ClaimEvent
-	err := d.unpack(log, 0, &out)
+	err := d.unpack(log, 1, &out)
 	if err != nil {
 		return err
 	}

@@ -51,7 +51,7 @@ type NodeRegisterEvent struct {
 
 func (d *Dumper) HandleModifyCommissionRate(log types.Log, time uint64) error {
 	var out ModifyCommissionRateEvent
-	err := d.unpack(log, 0, &out)
+	err := d.unpack(log, 3, &out)
 	if err != nil {
 		return err
 	}
@@ -67,7 +67,7 @@ func (d *Dumper) HandleModifyCommissionRate(log types.Log, time uint64) error {
 
 func (d *Dumper) HandleNodeWithdraw(log types.Log) error {
 	var out NodeWithdrawEvent
-	err := d.unpack(log, 0, &out)
+	err := d.unpack(log, 3, &out)
 	if err != nil {
 		return err
 	}
@@ -95,7 +95,7 @@ func (d *Dumper) HandleNodeWithdraw(log types.Log) error {
 
 func (d *Dumper) HandleConfirmNodeReward(log types.Log) error {
 	var out ConfirmNodeRewardEvent
-	err := d.unpack(log, 0, &out)
+	err := d.unpack(log, 3, &out)
 	if err != nil {
 		return err
 	}
@@ -138,7 +138,7 @@ func (d *Dumper) HandleConfirmNodeReward(log types.Log) error {
 
 func (d *Dumper) HandleNodeDailyDelegations(log types.Log) error {
 	var out NodeDailyDelegationsEvent
-	err := d.unpack(log, 0, &out)
+	err := d.unpack(log, 3, &out)
 	if err != nil {
 		return err
 	}
@@ -176,7 +176,7 @@ func (d *Dumper) HandleNodeDailyDelegations(log types.Log) error {
 
 func (d *Dumper) HandleDelegate(log types.Log) error {
 	var out DelegateEvent
-	err := d.unpack(log, 0, &out)
+	err := d.unpack(log, 3, &out)
 	if err != nil {
 		return err
 	}
@@ -208,7 +208,7 @@ func (d *Dumper) HandleDelegate(log types.Log) error {
 
 func (d *Dumper) HandleUndelegate(log types.Log) error {
 	var out DelegateEvent
-	err := d.unpack(log, 0, &out)
+	err := d.unpack(log, 3, &out)
 	if err != nil {
 		return err
 	}
@@ -243,7 +243,7 @@ func (d *Dumper) HandleUndelegate(log types.Log) error {
 
 func (d *Dumper) HandleRedelegate(log types.Log) error {
 	var out DelegateEvent
-	err := d.unpack(log, 0, &out)
+	err := d.unpack(log, 3, &out)
 	if err != nil {
 		return err
 	}
@@ -302,7 +302,7 @@ func (d *Dumper) HandleRedelegate(log types.Log) error {
 
 func (d *Dumper) HandleClaimReward(log types.Log) error {
 	var out ClaimRewardEvent
-	err := d.unpack(log, 0, &out)
+	err := d.unpack(log, 3, &out)
 	if err != nil {
 		return err
 	}
@@ -324,7 +324,7 @@ func (d *Dumper) HandleClaimReward(log types.Log) error {
 
 func (d *Dumper) GetNodeAddr(log types.Log) (common.Address, error) {
 	var out NodeRegisterEvent
-	err := d.unpack(log, 0, &out)
+	err := d.unpack(log, 3, &out)
 	if err != nil {
 		return common.Address{}, err
 	}
@@ -333,7 +333,7 @@ func (d *Dumper) GetNodeAddr(log types.Log) (common.Address, error) {
 
 func (d *Dumper) HandleNodeRegister(log types.Log, time uint64, nodeInfo *database.NodeInfoOnChain) error {
 	var out NodeRegisterEvent
-	err := d.unpack(log, 0, &out)
+	err := d.unpack(log, 3, &out)
 	if err != nil {
 		return err
 	}
