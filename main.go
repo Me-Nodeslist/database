@@ -8,6 +8,11 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
+// @title NodeList API
+// @version 1.0
+// @description This is a server API for NodeList program
+// @host localhost:8088
+// @BasePath /v1
 func main() {
 	local := make([]*cli.Command, 0, 2)
 	local = append(local, cmd.ServerRunCmd, cmd.VersionCmd)

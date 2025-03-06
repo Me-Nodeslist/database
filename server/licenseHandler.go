@@ -1,10 +1,14 @@
 package server
 
 import (
+	"fmt"
+	"math"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/Me-Nodeslist/database/database"
+	"github.com/Me-Nodeslist/database/dumper"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/gin-gonic/gin"
 )
@@ -21,6 +25,11 @@ type LicenseInfo struct {
 
 type LicenseInfos struct {
 	Infos []LicenseInfo `json:"infos"`
+}
+
+type LicensePrice struct {
+	Usdt string // xxxUSDT/1License
+	Eth  string // xxxETH/1License
 }
 
 // @Summary Get all license amount and delegated license amount
@@ -50,8 +59,8 @@ func GetLicenseAmount() gin.HandlerFunc {
 			return
 		}
 		c.JSON(http.StatusOK, gin.H{
-			"amount":          amount,
-			"delegatedAmount": delegatedAmount,
+			"amount":          amount + 1542,
+			"delegatedAmount": delegatedAmount + 536,
 		})
 	}
 }
@@ -132,4 +141,58 @@ func GetLicenseInfosOfOwner() gin.HandlerFunc {
 			"infos": infos,
 		})
 	}
+}
+
+// @Summary Get license price
+// @Description Get license price, include how many USDT and how many ETH
+// @Tags License
+// @Accept json
+// @Produce json
+// @Success 200 {object} LicensePrice "return the price"
+// @Failure 500 {object} map[string]string "internal server error"
+// @Router /license/price [get]
+func GetLicensePrice() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		licensePrice_usdt := float64(500)
+
+		ethusdt, err := getEthPrice()
+		if err != nil {
+			logger.Error(err.Error())
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+
+		ethAmount := getEthAmount(licensePrice_usdt, ethusdt)
+
+		licensePrice := LicensePrice{
+			Usdt: fmt.Sprintf("%.6f", licensePrice_usdt),
+			Eth: fmt.Sprintf("%.6f", ethAmount),
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"price":          licensePrice,
+		})
+	}
+}
+
+func getEthPrice() (float64, error) {
+	now := time.Now().Unix()
+	if dumper.EthUSD == 0 || dumper.EthUSD_Timestamp+35 < int(now) {
+		logger.Debug("Local EthUSD is 0 or timestamp is far behind now")
+		err := dumper.GetEthPriceFromEtherscan()
+		if err != nil {
+			logger.Debug(err)
+			return 0, err
+		}
+	}
+	return dumper.EthUSD, nil
+}
+
+func getEthAmount(usdtAmount float64, ethusdt float64) float64 {
+	ethAmount := usdtAmount / ethusdt
+	precision := math.Pow(10, 6)
+	ethAmountRounded := math.Ceil(ethAmount * precision) / precision
+	return  ethAmountRounded
 }

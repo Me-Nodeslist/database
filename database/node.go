@@ -31,6 +31,7 @@ type NodeInfo struct {
 	DelegationReward           string
 	CommissionRateLastModifyAt string
 	RegisterDate               string
+	ExpireDate string
 	OnlineDays                 int64
 	OnlineDays_RecentMonth     int64
 	OnlineDays_RecentWeek      int64
@@ -110,6 +111,16 @@ func GetNodeInfos(offset int, limit int) ([]NodeInfo, error) {
 func GetActiveNodeInfos(offset int, limit int) ([]NodeInfo, error) {
 	var nodeInfos []NodeInfo
 	err := GlobalDataBase.Model(&NodeInfo{}).Where("active = ?", true).Offset(offset).Limit(limit).Find(&nodeInfos).Error
+	if err != nil {
+		return nodeInfos, err
+	}
+	return nodeInfos, nil
+}
+
+func GetNodeInfosByRecipient(recipientAddr common.Address, offset int, limit int) ([]NodeInfo, error) {
+	var nodeInfos []NodeInfo
+	recipient := recipientAddr.Hex()
+	err := GlobalDataBase.Model(&NodeInfo{}).Where("recipient = ?", recipient).Offset(offset).Limit(limit).Find(&nodeInfos).Error
 	if err != nil {
 		return nodeInfos, err
 	}

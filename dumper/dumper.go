@@ -2,10 +2,14 @@ package dumper
 
 import (
 	"context"
+	"encoding/json"
+	"io"
 	"log"
 	"math/big"
+	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -26,11 +30,6 @@ type ContractAddress struct {
 	Delegation common.Address
 }
 
-var (
-	// blockNumber = big.NewInt(0)
-	logger = logs.Logger("dumper")
-)
-
 type Dumper struct {
 	endpoint        string
 	contractABI     []abi.ABI
@@ -41,6 +40,25 @@ type Dumper struct {
 	eventNameMap map[common.Hash]string
 	indexedMap   map[common.Hash]abi.Arguments
 }
+
+type EtherscanResponse struct {
+	Status  string `json:"status"`
+	Message string `json:"message"`
+	Result  struct {
+		EthBTC           string `json:"ethbtc"`
+		EthBTC_Timestamp string `json:"ethbtc_timestamp"`
+		EthUSD           string `json:"ethusd"`
+		EthUSD_Timestamp string `json:"ethusd_timestamp"`
+	} `json:"result"`
+}
+
+var (
+	// blockNumber = big.NewInt(0)
+	logger = logs.Logger("dumper")
+)
+var URL string
+var EthUSD float64
+var EthUSD_Timestamp int
 
 func NewDumper(chain string, addrs *ContractAddress) (dumper *Dumper, err error) {
 	dumper = &Dumper{
@@ -127,7 +145,6 @@ func NewDumper(chain string, addrs *ContractAddress) (dumper *Dumper, err error)
 }
 
 func (d *Dumper) SubscribeEvents(ctx context.Context) error {
-	// var last *big.Int
 	for {
 		d.Dump()
 
@@ -137,6 +154,55 @@ func (d *Dumper) SubscribeEvents(ctx context.Context) error {
 		case <-time.After(10 * time.Second):
 		}
 	}
+}
+
+func (d *Dumper) SubscribeEthPrice(ctx context.Context, apikey string) error {
+	URL = "https://api.etherscan.io/api?module=stats&action=ethprice&apikey=" + apikey
+	log.Println("Etherscan api url:", URL)
+	for {
+		GetEthPriceFromEtherscan()
+
+		select {
+		case <-ctx.Done():
+			return nil
+		case <-time.After(30 * time.Second):
+		}
+	}
+}
+
+func GetEthPriceFromEtherscan() error {
+	resp, err := http.Get(URL)
+	if err != nil {
+		logger.Error(err.Error())
+		return err
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		logger.Error(err.Error())
+		return err
+	}
+
+	var data EtherscanResponse
+	err = json.Unmarshal(body, &data)
+	if err != nil {
+		logger.Error(err.Error())
+		return err
+	}
+
+	EthUSD, err = strconv.ParseFloat(data.Result.EthUSD, 64)
+	if err != nil {
+		logger.Error(err.Error())
+		return err
+	}
+	EthUSD_Timestamp, err = strconv.Atoi(data.Result.EthUSD_Timestamp)
+	if err != nil {
+		logger.Error(err.Error())
+		return err
+	}
+
+	return nil
 }
 
 func (d *Dumper) Dump() error {

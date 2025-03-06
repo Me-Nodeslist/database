@@ -51,6 +51,11 @@ var ServerRunCmd = &cli.Command{
 			Usage: "input delegation contract address",
 			Value: "",
 		},
+		&cli.StringFlag{
+			Name:  "apikey",
+			Usage: "input etherscan api key",
+			Value: "",
+		},
 	},
 	Action: func(ctx *cli.Context) error {
 		endPoint := ctx.String("endpoint")
@@ -60,6 +65,8 @@ var ServerRunCmd = &cli.Command{
 		delMEMO := ctx.String("delMEMO")
 		settlement := ctx.String("settlement")
 		delegation := ctx.String("delegation")
+
+		apikey := ctx.String("apikey")
 
 		addrs := &dumper.ContractAddress{
 			LicenseNFT: common.HexToAddress(licenseNFT),
@@ -86,6 +93,7 @@ var ServerRunCmd = &cli.Command{
 			return err
 		}
 		go dumper.SubscribeEvents(cctx)
+		go dumper.SubscribeEthPrice(cctx, apikey)
 
 		srv, err := server.NewServer(endPoint)
 		if err != nil {

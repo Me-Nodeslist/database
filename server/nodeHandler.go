@@ -129,6 +129,56 @@ func GetNodeInfoOfOwner() gin.HandlerFunc {
 	}
 }
 
+// @Summary Get the nodes information by the recipient
+// @Description Query the nodes information list through the recipient address who receives the node reward
+// @Tags Node
+// @Accept json
+// @Produce json
+// @Param address path string true "recipient address(an ethereum address with prefix '0x')"
+// @Param offset query int false "paging start index (default 0)"
+// @Param limit query int false "number of items to return per page(default 10)"
+// @Success 200 {object} NodeInfos "return the nodes information list successfully"
+// @Failure 500 {object} map[string]string "internal server error"
+// @Router /node/info/recipient/{address} [get]
+func GetNodeInfosOfRecipient() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		address := c.Param("address")
+		recipient := common.HexToAddress(address)
+
+		offsetStr := c.Query("offset")
+		limitStr := c.Query("limit")
+
+		offset, err := strconv.Atoi(offsetStr)
+		if err != nil {
+			logger.Error(err.Error())
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+		limit, err := strconv.Atoi(limitStr)
+		if err != nil {
+			logger.Error(err.Error())
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+
+		info, err := database.GetNodeInfosByRecipient(recipient, offset, limit)
+		if err != nil {
+			logger.Error(err.Error())
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{
+			"info": info,
+		})
+	}
+}
+
 // @Summary Get the nodes information delegated by a specific owner
 // @Description Query the information of the nodes that the specific owner has delegated his licenses to
 // @Tags Node

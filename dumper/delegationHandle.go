@@ -34,7 +34,7 @@ type NodeDailyDelegationsEvent struct {
 
 type DelegateEvent struct {
 	TokenID *big.Int
-	To    common.Address
+	To      common.Address
 }
 
 type ClaimRewardEvent struct {
@@ -347,6 +347,7 @@ func (d *Dumper) HandleNodeRegister(log types.Log, time uint64, nodeInfo *databa
 		CommissionRate:             out.CommissionRate,
 		CommissionRateLastModifyAt: nodeInfo.CommissionRateLastModifyAt.String(),
 		RegisterDate:               strconv.FormatUint(time, 10),
+		ExpireDate:                 strconv.FormatUint(time+94608000, 10), // +3years
 	}
 	return info.CreateNodeInfo()
 }

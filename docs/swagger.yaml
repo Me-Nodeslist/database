@@ -1,3 +1,4 @@
+basePath: /v1
 definitions:
   server.LicenseInfo:
     properties:
@@ -22,6 +23,15 @@ definitions:
         items:
           $ref: '#/definitions/server.LicenseInfo'
         type: array
+    type: object
+  server.LicensePrice:
+    properties:
+      eth:
+        description: xxxETH/1License
+        type: string
+      usdt:
+        description: xxxUSDT/1License
+        type: string
     type: object
   server.NodeInfo:
     properties:
@@ -98,8 +108,12 @@ definitions:
         example: "100000"
         type: string
     type: object
+host: localhost:8088
 info:
   contact: {}
+  description: This is a server API for NodeList program
+  title: NodeList API
+  version: "1.0"
 paths:
   /license/amount:
     get:
@@ -200,6 +214,27 @@ paths:
               type: string
             type: object
       summary: Get the license information of the specified owner in pages
+      tags:
+      - License
+  /license/price:
+    get:
+      consumes:
+      - application/json
+      description: Get license price, include how many USDT and how many ETH
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: return the price
+          schema:
+            $ref: '#/definitions/server.LicensePrice'
+        "500":
+          description: internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get license price
       tags:
       - License
   /node/amount:
@@ -321,6 +356,42 @@ paths:
               type: string
             type: object
       summary: Get the node information of the owner
+      tags:
+      - Node
+  /node/info/recipient/{address}:
+    get:
+      consumes:
+      - application/json
+      description: Query the nodes information list through the recipient address
+        who receives the node reward
+      parameters:
+      - description: recipient address(an ethereum address with prefix '0x')
+        in: path
+        name: address
+        required: true
+        type: string
+      - description: paging start index (default 0)
+        in: query
+        name: offset
+        type: integer
+      - description: number of items to return per page(default 10)
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: return the nodes information list successfully
+          schema:
+            $ref: '#/definitions/server.NodeInfos'
+        "500":
+          description: internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get the nodes information by the recipient
       tags:
       - Node
   /reward/info/{address}:

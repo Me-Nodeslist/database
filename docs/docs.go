@@ -165,6 +165,38 @@ const docTemplate = `{
                 }
             }
         },
+        "/license/price": {
+            "get": {
+                "description": "Get license price, include how many USDT and how many ETH",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "License"
+                ],
+                "summary": "Get license price",
+                "responses": {
+                    "200": {
+                        "description": "return the price",
+                        "schema": {
+                            "$ref": "#/definitions/server.LicensePrice"
+                        }
+                    },
+                    "500": {
+                        "description": "internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/node/amount": {
             "get": {
                 "description": "Query the amount of the registered nodes in nodelist server",
@@ -346,6 +378,59 @@ const docTemplate = `{
                 }
             }
         },
+        "/node/info/recipient/{address}": {
+            "get": {
+                "description": "Query the nodes information list through the recipient address who receives the node reward",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Node"
+                ],
+                "summary": "Get the nodes information by the recipient",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "recipient address(an ethereum address with prefix '0x')",
+                        "name": "address",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "paging start index (default 0)",
+                        "name": "offset",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "number of items to return per page(default 10)",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "return the nodes information list successfully",
+                        "schema": {
+                            "$ref": "#/definitions/server.NodeInfos"
+                        }
+                    },
+                    "500": {
+                        "description": "internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/reward/info/{address}": {
             "get": {
                 "description": "Query all license rewards and node reward information of the specific owner, include total and withdrawed",
@@ -485,6 +570,19 @@ const docTemplate = `{
                 }
             }
         },
+        "server.LicensePrice": {
+            "type": "object",
+            "properties": {
+                "eth": {
+                    "description": "xxxETH/1License",
+                    "type": "string"
+                },
+                "usdt": {
+                    "description": "xxxUSDT/1License",
+                    "type": "string"
+                }
+            }
+        },
         "server.NodeInfo": {
             "type": "object",
             "properties": {
@@ -600,12 +698,12 @@ const docTemplate = `{
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "",
-	Host:             "",
-	BasePath:         "",
+	Version:          "1.0",
+	Host:             "localhost:8088",
+	BasePath:         "/v1",
 	Schemes:          []string{},
-	Title:            "",
-	Description:      "",
+	Title:            "NodeList API",
+	Description:      "This is a server API for NodeList program",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",
