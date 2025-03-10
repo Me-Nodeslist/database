@@ -433,9 +433,11 @@ func (d *Dumper) getNodeInfo(client *ethclient.Client, log types.Log) (database.
 	if err != nil {
 		return nodeInfo, err
 	}
-	err = d.contractABI[3].UnpackIntoInterface(&nodeInfo, "getNodeInfo", res)
+	var temp database.NodeInfoOnChain
+	err = d.contractABI[3].UnpackIntoInterface(&temp, "getNodeInfo", res)
 	if err != nil {
 		return nodeInfo, err
 	}
+	nodeInfo = database.NodeInfoOnChain(temp)
 	return nodeInfo, nil
 }
