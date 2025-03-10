@@ -32,6 +32,11 @@ var ServerRunCmd = &cli.Command{
 			Value: "product",
 		},
 		&cli.StringFlag{
+			Name:  "ethrpc",
+			Usage: "input eth chain rpc url",
+			Value: "product",
+		},
+		&cli.StringFlag{
 			Name:  "licenseNFT",
 			Usage: "input licenseNFT contract address",
 			Value: "",
@@ -60,6 +65,7 @@ var ServerRunCmd = &cli.Command{
 	Action: func(ctx *cli.Context) error {
 		endPoint := ctx.String("endpoint")
 		chain := ctx.String("chain")
+		ethrpc := ctx.String("ethrpc")
 
 		licenseNFT := ctx.String("licenseNFT")
 		delMEMO := ctx.String("delMEMO")
@@ -83,7 +89,7 @@ var ServerRunCmd = &cli.Command{
 			return err
 		}
 
-		dumper, err := dumper.NewDumper(chain, addrs)
+		dumper, err := dumper.NewDumper(ethrpc, addrs)
 		if err != nil {
 			return err
 		}

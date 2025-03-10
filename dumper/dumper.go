@@ -20,7 +20,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
-	com "github.com/memoio/contractsv2/common"
 )
 
 type ContractAddress struct {
@@ -60,14 +59,14 @@ var URL string
 var EthUSD float64
 var EthUSD_Timestamp int
 
-func NewDumper(chain string, addrs *ContractAddress) (dumper *Dumper, err error) {
+func NewDumper(ethrpc string, addrs *ContractAddress) (dumper *Dumper, err error) {
 	dumper = &Dumper{
 		eventNameMap: make(map[common.Hash]string),
 		indexedMap:   make(map[common.Hash]abi.Arguments),
 	}
 
-	_, endpoint := com.GetInsEndPointByChain(chain)
-	dumper.endpoint = endpoint
+	//_, endpoint := com.GetInsEndPointByChain(chain)
+	dumper.endpoint = ethrpc
 
 	dumper.contractAddress = []common.Address{addrs.LicenseNFT, addrs.DelMEMO, addrs.Settlement, addrs.Delegation}
 
