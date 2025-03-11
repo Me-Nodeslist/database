@@ -52,6 +52,7 @@ func (r Router) registerLicenseRouter() {
 	r.GET("/license/amount/owner/:address", GetLicenseAmountOfOwner())
 	r.GET("/license/info/owner/:address", GetLicenseInfosOfOwner()) // page
 	r.GET("/license/price", GetLicensePrice())
+	r.POST("/license/buy", HandleMint())
 }
 
 func (r Router) registerNodeRouter() {

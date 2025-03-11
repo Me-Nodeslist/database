@@ -32,6 +32,12 @@ type LicensePrice struct {
 	Eth  string // xxxETH/1License
 }
 
+type MintRequest struct {
+	Address string
+	Amount int64
+	Price int64
+}
+
 // @Summary Get all license amount and delegated license amount
 // @Description Get all license amount that have been sold, and all license amount that have been delegated
 // @Tags License
@@ -174,6 +180,26 @@ func GetLicensePrice() gin.HandlerFunc {
 		c.JSON(http.StatusOK, gin.H{
 			"price":          licensePrice,
 		})
+	}
+}
+
+// @Summary Get license price
+// @Description Get license price, include how many USDT and how many ETH
+// @Tags License
+// @Accept json
+// @Produce json
+// @Success 200 {object} LicensePrice "return the price"
+// @Failure 500 {object} map[string]string "internal server error"
+// @Router /license/price [get]
+func HandleMint() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var req MintRequest
+		if err := c.BindJSON(&req); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
+			return
+		}
+
+		txHash, err := mintNFT(req.Address, req.Amount, req.Price)
 	}
 }
 

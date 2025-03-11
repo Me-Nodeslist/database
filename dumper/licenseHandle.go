@@ -14,6 +14,12 @@ type LicenseTransfer struct {
 	TokenID *big.Int
 }
 
+type MetaData struct {
+	Code string
+	Price uint64
+	Tier uint8 
+}
+
 func (d *Dumper) HandleLicenseMint(log types.Log) error {
 	var out LicenseTransfer
 	err := d.unpack(log, 0, &out)

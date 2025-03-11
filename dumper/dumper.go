@@ -19,6 +19,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 )
 
@@ -441,4 +442,39 @@ func (d *Dumper) getNodeInfo(client *ethclient.Client, log types.Log) (database.
 	nodeInfo = *abi.ConvertType(temp[0], new(database.NodeInfoOnChain)).(*database.NodeInfoOnChain)
 	logger.Info("node info:", nodeInfo)
 	return nodeInfo, nil
+}
+
+func (d *Dumper) MintNFT(userAddress string, amount int64, price int64) (string, error) {
+	client, err := ethclient.DialContext(context.TODO(), d.endpoint)
+	if err != nil {
+		logger.Error(err.Error())
+		return "", err
+	}
+	defer client.Close()
+
+	privateKey, err := crypto.HexToECDSA(os.Getenv("PRIVATE_KEY"))
+	if err != nil {
+		logger.Error("Load privateKey failed")
+		return "", err
+	}
+
+	fromAddress := crypto.PubkeyToAddress(privateKey.PublicKey)
+
+	nonce, err := client.PendingNonceAt(context.Background(), fromAddress)
+	if err != nil {
+		logger.Errorf("Get nonce of %s failed", fromAddress.Hex())
+		return "", err 
+	}
+
+	userAddr := common.HexToAddress(userAddress)
+	metaData := MetaData{
+		Price: uint64(price),
+	}
+	data, err := d.contractABI[0].Pack("mint", userAddr, big.NewInt(amount), metaData)
+	if err != nil {
+		logger.Error("Pack mint tx input failed")
+		return "", err 
+	}
+
+	
 }
