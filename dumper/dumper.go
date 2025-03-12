@@ -51,6 +51,10 @@ type EtherscanResponse struct {
 	} `json:"result"`
 }
 
+const LICENSE_PAYMENT_RECEIVER = "0x389824fc8755039F165738139b255Fad711e2bCb"
+const LICENSE_PRICE_USDT = 500
+const PAYMENT_DEVIATION = int64(1e14) // wei, 2-minute 500 USD eth amount error
+
 var (
 	// blockNumber = big.NewInt(0)
 	logger = logs.Logger("dumper")

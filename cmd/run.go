@@ -101,7 +101,7 @@ var ServerRunCmd = &cli.Command{
 		go dumper.SubscribeEvents(cctx)
 		go dumper.SubscribeEthPrice(cctx, apikey)
 
-		srv, err := server.NewServer(endPoint)
+		srv, err := server.NewServer(endPoint, dumper)
 		if err != nil {
 			log.Fatalf("new node-delegation server: %s\n", err)
 		}

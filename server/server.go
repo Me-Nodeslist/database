@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/Me-Nodeslist/database/docs"
+	"github.com/Me-Nodeslist/database/dumper"
 	"github.com/Me-Nodeslist/database/logs"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -18,7 +19,7 @@ type Router struct {
 
 var logger = logs.Logger("server")
 
-func NewServer(endpoint string) (*http.Server, error) {
+func NewServer(endpoint string, d *dumper.Dumper) (*http.Server, error) {
 	log.Println("Begin listen and server...")
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.Default()
@@ -37,7 +38,7 @@ func NewServer(endpoint string) (*http.Server, error) {
 	r := Router{
 		router,
 	}
-	r.registerLicenseRouter()
+	r.registerLicenseRouter(d)
 	r.registerNodeRouter()
 	r.registerRewardRouter()
 
@@ -47,18 +48,19 @@ func NewServer(endpoint string) (*http.Server, error) {
 	}, nil
 }
 
-func (r Router) registerLicenseRouter() {
+func (r Router) registerLicenseRouter(d *dumper.Dumper) {
 	r.GET("/license/amount", GetLicenseAmount()) // all and delegated
 	r.GET("/license/amount/owner/:address", GetLicenseAmountOfOwner())
 	r.GET("/license/info/owner/:address", GetLicenseInfosOfOwner()) // page
 	r.GET("/license/price", GetLicensePrice())
+	r.POST("/license/purchase", HandleLicensePurchase(d))
 }
 
 func (r Router) registerNodeRouter() {
 	r.GET("/node/amount", GetNodeAmount())
 	r.GET("/node/info", GetNodeInfos()) // page
 	r.GET("/node/info/owner/:address", GetNodeInfoOfOwner())
-	r.GET("/node/info/recipient/:address", GetNodeInfosOfRecipient())            // page
+	r.GET("/node/info/recipient/:address", GetNodeInfosOfRecipient())   // page
 	r.GET("/node/info/delegation/:address", GetNodeInfosOfdelegation()) // page
 }
 

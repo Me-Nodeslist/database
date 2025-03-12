@@ -16,6 +16,15 @@ type LicenseInfo struct {
 	WithdrawedReward string
 }
 
+type LicensePurchaseHistory struct {
+	TxHash string `gorm:"uniqueIndex"`
+	Payer string
+	Amount uint16 // how many license
+	Price int64 // xxxUSDT/1License
+	Value string // how many eth paid
+	Done bool
+}
+
 func InitLicenseInfoTable() error {
 	return GlobalDataBase.AutoMigrate(&LicenseInfo{})
 }
@@ -89,4 +98,28 @@ func GetLicenseInfosByNode(delegatedNodeAddr common.Address, offset int, limit i
 		return licenseInfos, err
 	}
 	return licenseInfos, nil
+}
+
+
+// LicensePurchaseHistory
+
+func InitLicensePurchaseHistory() error {
+	return GlobalDataBase.AutoMigrate(&LicensePurchaseHistory{})
+}
+
+func (l *LicensePurchaseHistory) CreateLicensePurchaseHistory() error {
+	return GlobalDataBase.Create(l).Error
+}
+
+func (l *LicensePurchaseHistory) UpdateLicensePurchaseHistory() error {
+	return GlobalDataBase.Model(&LicensePurchaseHistory{}).Where("txhash = ?", l.TxHash).Updates(map[string]interface{}{"amount": l.Amount, "price": l.Price, "value": l.Value, "done": l.Done}).Error
+}
+
+func GetPurchaseHistoryByTxHash(txhash string) (LicensePurchaseHistory, error) {
+	var info LicensePurchaseHistory
+	err := GlobalDataBase.Model(&LicensePurchaseHistory{}).Where("txhash = ?", txhash).First(&info).Error
+	if err != nil {
+		return info, err
+	}
+	return info, nil
 }

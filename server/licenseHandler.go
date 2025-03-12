@@ -32,6 +32,13 @@ type LicensePrice struct {
 	Eth  string // xxxETH/1License
 }
 
+type MintRequest struct {
+	Receiver string
+	Amount   int64
+	Price    string // xxxWEI/1License
+	TxHash   string // the transaction hash that receiver transfer eth to admin
+}
+
 // @Summary Get all license amount and delegated license amount
 // @Description Get all license amount that have been sold, and all license amount that have been delegated
 // @Tags License
@@ -153,7 +160,7 @@ func GetLicenseInfosOfOwner() gin.HandlerFunc {
 // @Router /license/price [get]
 func GetLicensePrice() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		licensePrice_usdt := float64(500)
+		licensePrice_usdt := float64(dumper.LICENSE_PRICE_USDT)
 
 		ethusdt, err := getEthPrice()
 		if err != nil {
@@ -168,12 +175,47 @@ func GetLicensePrice() gin.HandlerFunc {
 
 		licensePrice := LicensePrice{
 			Usdt: fmt.Sprintf("%.6f", licensePrice_usdt),
-			Eth: fmt.Sprintf("%.6f", ethAmount),
+			Eth:  fmt.Sprintf("%.6f", ethAmount),
 		}
 
 		c.JSON(http.StatusOK, gin.H{
-			"price":          licensePrice,
+			"price": licensePrice,
 		})
+	}
+}
+
+// @Summary Get license price
+// @Description Get license price, include how many USDT and how many ETH
+// @Tags License
+// @Accept json
+// @Produce json
+// @Success 200 {object} LicensePrice "return the price"
+// @Failure 500 {object} map[string]string "internal server error"
+// @Router /license/price [get]
+func HandleLicensePurchase(d *dumper.Dumper) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var req MintRequest
+		if err := c.BindJSON(&req); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
+			return
+		}
+
+		ethAmount := getEthAmount(float64(dumper.LICENSE_PRICE_USDT), dumper.EthUSD)
+		value := ethAmount * float64(req.Amount)
+
+		isValid, err := d.PurchaseTxValid(req.TxHash, req.Receiver, value, req.Amount)
+		if !isValid {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		txHash, err := d.MintNFT(req.Receiver, req.Amount, dumper.LICENSE_PRICE_USDT)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"success": true, "txHash": txHash})
 	}
 }
 
@@ -193,6 +235,6 @@ func getEthPrice() (float64, error) {
 func getEthAmount(usdtAmount float64, ethusdt float64) float64 {
 	ethAmount := usdtAmount / ethusdt
 	precision := math.Pow(10, 6)
-	ethAmountRounded := math.Ceil(ethAmount * precision) / precision
-	return  ethAmountRounded
+	ethAmountRounded := math.Ceil(ethAmount*precision) / precision
+	return ethAmountRounded
 }
