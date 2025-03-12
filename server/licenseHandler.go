@@ -35,7 +35,7 @@ type LicensePrice struct {
 type MintRequest struct {
 	Receiver string
 	Amount   int64
-	Price    string // xxxWEI/1License
+	Value    string // pay how many wei
 	TxHash   string // the transaction hash that receiver transfer eth to admin
 }
 
@@ -184,14 +184,16 @@ func GetLicensePrice() gin.HandlerFunc {
 	}
 }
 
-// @Summary Get license price
-// @Description Get license price, include how many USDT and how many ETH
+// @Summary Handle license purchase
+// @Description User pay for license, and the server will check the payment, if valid, server will mint license for the user
 // @Tags License
 // @Accept json
 // @Produce json
-// @Success 200 {object} LicensePrice "return the price"
+// @Param  request body MintRequest true "receiver: the buyer; amount: buy how many licenses; value: pay how many wei; txhash: the transaction hash that receiver transfer eth to admin"
+// @Success 200 {object} map[string]interface{} "return the transaction hash of mintLicense"
+// @Failure 400 {object} map[string]string "request parameter error"
 // @Failure 500 {object} map[string]string "internal server error"
-// @Router /license/price [get]
+// @Router /license/purchase [post]
 func HandleLicensePurchase(d *dumper.Dumper) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var req MintRequest
@@ -209,7 +211,28 @@ func HandleLicensePurchase(d *dumper.Dumper) gin.HandlerFunc {
 			return
 		}
 
+		history := database.LicensePurchaseHistory{
+			TxHash: req.TxHash,
+			Payer: req.Receiver,
+			Amount: uint16(req.Amount),
+			Price: dumper.LICENSE_PRICE_USDT,
+			Value: req.Value,
+			Done: false,
+		}
+		err = history.CreateLicensePurchaseHistory()
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
 		txHash, err := d.MintNFT(req.Receiver, req.Amount, dumper.LICENSE_PRICE_USDT)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		history.Done = true
+		err = history.UpdateLicensePurchaseHistory()
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return

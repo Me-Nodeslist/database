@@ -33,6 +33,19 @@ definitions:
         description: xxxUSDT/1License
         type: string
     type: object
+  server.MintRequest:
+    properties:
+      amount:
+        type: integer
+      receiver:
+        type: string
+      txHash:
+        description: the transaction hash that receiver transfer eth to admin
+        type: string
+      value:
+        description: pay how many wei
+        type: string
+    type: object
   server.NodeInfo:
     properties:
       active:
@@ -235,6 +248,44 @@ paths:
               type: string
             type: object
       summary: Get license price
+      tags:
+      - License
+  /license/purchase:
+    post:
+      consumes:
+      - application/json
+      description: User pay for license, and the server will check the payment, if
+        valid, server will mint license for the user
+      parameters:
+      - description: 'receiver: the buyer; amount: buy how many licenses; value: pay
+          how many wei; txhash: the transaction hash that receiver transfer eth to
+          admin'
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/server.MintRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: return the transaction hash of mintLicense
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: request parameter error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Handle license purchase
       tags:
       - License
   /node/amount:

@@ -112,7 +112,7 @@ func (l *LicensePurchaseHistory) CreateLicensePurchaseHistory() error {
 }
 
 func (l *LicensePurchaseHistory) UpdateLicensePurchaseHistory() error {
-	return GlobalDataBase.Model(&LicensePurchaseHistory{}).Where("txhash = ?", l.TxHash).Updates(map[string]interface{}{"amount": l.Amount, "price": l.Price, "value": l.Value, "done": l.Done}).Error
+	return GlobalDataBase.Model(&LicensePurchaseHistory{}).Where("txhash = ?", l.TxHash).Updates(map[string]interface{}{"done": l.Done}).Error
 }
 
 func GetPurchaseHistoryByTxHash(txhash string) (LicensePurchaseHistory, error) {
