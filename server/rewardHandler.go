@@ -8,21 +8,22 @@ import (
 	"github.com/Me-Nodeslist/database/database"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 type RewardInfo struct {
-	TotalLicenseRewards          string `json:"totalLicenseRewards" example:"1000000"`
+	TotalLicenseRewards           string `json:"totalLicenseRewards" example:"1000000"`
 	TotalWithdrawedLicenseRewards string `json:"totalWithdrawedLicenseRewards" example:"500000"`
-	NodeReward                   string `json:"nodeReward" example:"200000"`
-	WithdrawedNodeReward         string `json:"withdrawedNodeReward" example:"100000"`
+	NodeReward                    string `json:"nodeReward" example:"200000"`
+	WithdrawedNodeReward          string `json:"withdrawedNodeReward" example:"100000"`
 }
 
 type RedeemInfo struct {
-	RedeemingDelMEMOAmount   string   `json:"redeemingDelMEMOAmount" example:"1000"`
-	LockedMEMOAmount         string   `json:"lockedMEMOAmount" example:"500"`
-	UnlockedMEMOAmount       string   `json:"unlockedMEMOAmount" example:"1500"`
-	WithdrawedMEMOAmount     string   `json:"withdrawedMEMOAmount" example:"800"`
-	UnclaimedRedeemIDs       []string   `json:"unclaimedRedeemIDs" example:"['1', '2']"`
+	RedeemingDelMEMOAmount string   `json:"redeemingDelMEMOAmount" example:"1000"`
+	LockedMEMOAmount       string   `json:"lockedMEMOAmount" example:"500"`
+	UnlockedMEMOAmount     string   `json:"unlockedMEMOAmount" example:"1500"`
+	WithdrawedMEMOAmount   string   `json:"withdrawedMEMOAmount" example:"800"`
+	UnclaimedRedeemIDs     []string `json:"unclaimedRedeemIDs" example:"['1', '2']"`
 }
 
 // @Summary Get the account's reward information
@@ -40,6 +41,9 @@ func GetRewardInfo() gin.HandlerFunc {
 		address := c.Param("address")
 		owner := common.HexToAddress(address)
 
+		totalDelegationReward := big.NewInt(0)
+		totalWithdrawedDelegationReward := big.NewInt(0)
+
 		// get all licenses
 		amount, err := database.GetLicenseAmountByOwner(owner)
 		if err != nil {
@@ -49,55 +53,61 @@ func GetRewardInfo() gin.HandlerFunc {
 			})
 			return
 		}
-		infos, err := database.GetLicenseInfosByOwner(owner, 0, int(amount))
-		if err != nil {
-			logger.Error(err.Error())
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"error": err.Error(),
-			})
-			return
-		}
+		if amount > 0 {
+			infos, err := database.GetLicenseInfosByOwner(owner, 0, int(amount))
+			if err != nil {
+				logger.Error(err.Error())
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"error": err.Error(),
+				})
+				return
+			}
 
-		// get all delegation rewards
-		totalDelegationReward := big.NewInt(0)
-		totalWithdrawedDelegationReward := big.NewInt(0)
-		for i := 0; i < int(amount); i++ {
-			reward, ok := new(big.Int).SetString(infos[i].TotalReward, 10)
-			if !ok {
-				logger.Error(infos[i].TotalReward, errors.New("transfer string to big.Int error"))
-				c.JSON(http.StatusInternalServerError, gin.H{
-					"error": "transfer string to big.Int error",
-				})
-				return
+			// get all delegation rewards
+			for i := 0; i < int(amount); i++ {
+				reward, ok := new(big.Int).SetString(infos[i].TotalReward, 10)
+				if !ok {
+					logger.Error(infos[i].TotalReward, errors.New("transfer string to big.Int error"))
+					c.JSON(http.StatusInternalServerError, gin.H{
+						"error": "transfer string to big.Int error",
+					})
+					return
+				}
+				totalDelegationReward.Add(totalDelegationReward, reward)
+				reward, ok = new(big.Int).SetString(infos[i].WithdrawedReward, 10)
+				if !ok {
+					logger.Error(infos[i].WithdrawedReward, errors.New("transfer string to big.Int error"))
+					c.JSON(http.StatusInternalServerError, gin.H{
+						"error": "transfer string to big.Int error",
+					})
+					return
+				}
+				totalWithdrawedDelegationReward.Add(totalWithdrawedDelegationReward, reward)
 			}
-			totalDelegationReward.Add(totalDelegationReward, reward)
-			reward, ok = new(big.Int).SetString(infos[i].WithdrawedReward, 10)
-			if !ok {
-				logger.Error(infos[i].WithdrawedReward, errors.New("transfer string to big.Int error"))
-				c.JSON(http.StatusInternalServerError, gin.H{
-					"error": "transfer string to big.Int error",
-				})
-				return
-			}
-			totalWithdrawedDelegationReward.Add(totalWithdrawedDelegationReward, reward)
 		}
 
 		// get node rewards
+		nodeReward := "0"
+		withdrawedNodeReward := "0"
 		nodeInfo, err := database.GetNodeInfoByNodeAddress(owner)
-		if err != nil {
+		if err != nil && err != gorm.ErrRecordNotFound {
 			logger.Error(err.Error())
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"error": err.Error(),
 			})
 			return
+		}
+		if err == nil {
+			nodeReward = nodeInfo.SelfTotalReward
+			withdrawedNodeReward = nodeInfo.SelfWithdrawedReward
 		}
 
 		// return all rewards and all withdrawed rewards(withdraw delMEMO)
 		c.JSON(http.StatusOK, gin.H{
 			"totalLicenseRewards":           totalDelegationReward.String(),
 			"totalWithdrawedLicenseRewards": totalWithdrawedDelegationReward.String(),
-			"nodeReward":                    nodeInfo.SelfTotalReward,
-			"withdrawedNodeReward":          nodeInfo.SelfWithdrawedReward,
+			"nodeReward":                    nodeReward,
+			"withdrawedNodeReward":          withdrawedNodeReward,
 		})
 	}
 }
