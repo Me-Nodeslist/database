@@ -80,9 +80,11 @@ func (d *Dumper) PurchaseTxValid(txHash string, receiver string, shouldValue flo
 
 	shouldValue_Wei := int64(shouldValue * 1e18)
 	shouldValue_Wei_bigInt := big.NewInt(shouldValue_Wei)
-	if new(big.Int).Abs(new(big.Int).Sub(tx.Value(), shouldValue_Wei_bigInt)).Int64() > PAYMENT_DEVIATION*amount {
-		logger.Debugf("tx value %n, should pay %n, license amount %n", tx.Value(), shouldValue_Wei, amount)
-		return false, errors.New("tx value " + tx.Value().String() + ", should pay " + shouldValue_Wei_bigInt.String() + ", difference is too large")
+	if tx.Value().Cmp(shouldValue_Wei_bigInt) < 0 {
+		if new(big.Int).Sub(shouldValue_Wei_bigInt, tx.Value()).Int64() > PAYMENT_DEVIATION*amount {
+			logger.Debugf("tx value %n, should pay %n, license amount %n", tx.Value(), shouldValue_Wei, amount)
+			return false, errors.New("tx value " + tx.Value().String() + ", should pay " + shouldValue_Wei_bigInt.String() + ", difference is too large")
+		}
 	}
 
 	signer := types.LatestSignerForChainID(tx.ChainId())

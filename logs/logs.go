@@ -30,7 +30,7 @@ func init() {
 		panic(fmt.Sprintf("unable to open logging output: %v", err))
 	}
 
-	lf := os.Getenv("MEFS_LOG_FILE")
+	lf := os.Getenv("NODEDELEGATION_LOG_FILE")
 	if lf != "" {
 		debugWriter = getLogWriter(lf)
 	}
