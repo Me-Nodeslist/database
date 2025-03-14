@@ -112,12 +112,12 @@ func (l *LicensePurchaseHistory) CreateLicensePurchaseHistory() error {
 }
 
 func (l *LicensePurchaseHistory) UpdateLicensePurchaseHistory() error {
-	return GlobalDataBase.Model(&LicensePurchaseHistory{}).Where("txhash = ?", l.TxHash).Updates(map[string]interface{}{"done": l.Done}).Error
+	return GlobalDataBase.Model(&LicensePurchaseHistory{}).Where("tx_hash = ?", l.TxHash).Updates(map[string]interface{}{"done": l.Done}).Error
 }
 
 func GetPurchaseHistoryByTxHash(txhash string) (LicensePurchaseHistory, error) {
 	var info LicensePurchaseHistory
-	err := GlobalDataBase.Model(&LicensePurchaseHistory{}).Where("txhash = ?", txhash).First(&info).Error
+	err := GlobalDataBase.Model(&LicensePurchaseHistory{}).Where("tx_hash = ?", txhash).First(&info).Error
 	if err != nil {
 		return info, err
 	}

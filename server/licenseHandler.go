@@ -221,6 +221,7 @@ func HandleLicensePurchase(d *dumper.Dumper) gin.HandlerFunc {
 		}
 		err = history.CreateLicensePurchaseHistory()
 		if err != nil {
+			logger.Debug(err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
@@ -234,6 +235,7 @@ func HandleLicensePurchase(d *dumper.Dumper) gin.HandlerFunc {
 		history.Done = true
 		err = history.UpdateLicensePurchaseHistory()
 		if err != nil {
+			logger.Debug(err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
@@ -245,7 +247,7 @@ func HandleLicensePurchase(d *dumper.Dumper) gin.HandlerFunc {
 func getEthPrice() (float64, error) {
 	now := time.Now().Unix()
 	if dumper.EthUSD == 0 || dumper.EthUSD_Timestamp+35 < int(now) {
-		logger.Debug("Local EthUSD is 0 or timestamp is far behind now")
+		logger.Debug("Local EthUSD is 0 or timestamp is far behind now, ethusd:", dumper.EthUSD, " ethusd_timestamp:", dumper.EthUSD_Timestamp, " now:", now)
 		err := dumper.GetEthPriceFromEtherscan()
 		if err != nil {
 			logger.Debug(err)
