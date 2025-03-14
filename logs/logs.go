@@ -44,7 +44,7 @@ func init() {
 
 	mLogger = logger.Sugar()
 
-	l := getLogLevel(os.Getenv("MEFS_LOG_LEVEL"))
+	l := getLogLevel(os.Getenv("NODEDELEGATION_LOG_LEVEL"))
 
 	mLoglevel.SetLevel(l)
 }
