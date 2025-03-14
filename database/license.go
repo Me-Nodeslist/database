@@ -64,6 +64,13 @@ func GetLicenseAmountByOwner(ownerAddr common.Address) (int64, error) {
 	return length, err
 }
 
+func GetDelegatedLicenseAmountByOwner(ownerAddr common.Address) (int64, error) {
+	var length int64
+	owner := ownerAddr.Hex()
+	err := GlobalDataBase.Model(&LicenseInfo{}).Where("owner = ? AND delegated = ?", owner, true).Count(&length).Error
+	return length, err
+}
+
 func GetLicenseAmountByNode(delegatedNodeAddr common.Address) (int64, error) {
 	var length int64
 	delegatedNode := delegatedNodeAddr.Hex()

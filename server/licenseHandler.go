@@ -78,7 +78,7 @@ func GetLicenseAmount() gin.HandlerFunc {
 // @Accept json
 // @Produce json
 // @Param address path string true "owner address(an ethereum address with prefix '0x')""
-// @Success 200 {object} map[string]int "return amount"
+// @Success 200 {object} map[string]int "return amount and delegated amount"
 // @Failure 400 {object} map[string]string "request parameter error"
 // @Failure 500 {object} map[string]string "internal server error"
 // @Router /license/amount/owner/{address} [get]
@@ -94,8 +94,17 @@ func GetLicenseAmountOfOwner() gin.HandlerFunc {
 			})
 			return
 		}
+		delamount, err := database.GetDelegatedLicenseAmountByOwner(owner)
+		if err != nil {
+			logger.Error(err.Error())
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
 		c.JSON(http.StatusOK, gin.H{
 			"amount": amount,
+			"delegatedAmount": delamount,
 		})
 	}
 }
