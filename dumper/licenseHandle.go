@@ -26,21 +26,17 @@ type MetaData struct {
 }
 
 func (d *Dumper) HandleLicenseMint(log types.Log) error {
-	var out LicenseTransfer
-	err := d.unpack(log, 0, &out)
-	if err != nil {
-		return err
-	}
+	from, to, tokenID := d.unpackLicenseTransfer(log)
 
-	if out.From.Hex() != common.BigToAddress(big.NewInt(0)).Hex() {
-		logger.Info("License Transfer event: From is not address(0), From is ", out.From.Hex())
+	if from != common.BigToAddress(big.NewInt(0)).Hex() {
+		logger.Debug("License Transfer event: From is not address(0), From is ", from)
 		return nil
 	}
 
 	// store info to db
 	licenseInfo := database.LicenseInfo{
-		TokenID: out.TokenID.String(),
-		Owner:   out.To.Hex(),
+		TokenID: tokenID,
+		Owner:   to,
 	}
 	return licenseInfo.CreateLicenseInfo()
 }

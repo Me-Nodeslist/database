@@ -418,6 +418,14 @@ func (d *Dumper) unpack(log types.Log, contractIndex uint8, out interface{}) err
 	return abi.ParseTopics(out, indexed, log.Topics[1:])
 }
 
+func (d *Dumper) unpackLicenseTransfer(log types.Log) (string, string, string) {
+	from := common.BytesToAddress(log.Topics[1].Bytes()).Hex()
+	to := common.BytesToAddress(log.Topics[2].Bytes()).Hex()
+	tokenID := new(big.Int).SetBytes(log.Topics[3].Bytes()).String()
+	logger.Debug("unpack License-Transfer, from:", from, " to:", to, " tokenID:", tokenID)
+	return from, to, tokenID
+}
+
 func (d *Dumper) getNodeInfo(client *ethclient.Client, log types.Log) (database.NodeInfoOnChain, error) {
 	var nodeInfo database.NodeInfoOnChain
 	node, err := d.GetNodeAddr(log)
