@@ -1,7 +1,6 @@
 package server
 
 import (
-	"errors"
 	"math/big"
 	"net/http"
 
@@ -65,18 +64,24 @@ func GetRewardInfo() gin.HandlerFunc {
 
 			// get all delegation rewards
 			for i := 0; i < int(amount); i++ {
+				if infos[i].TotalReward == "" {
+					continue
+				}
 				reward, ok := new(big.Int).SetString(infos[i].TotalReward, 10)
 				if !ok {
-					logger.Error(infos[i].TotalReward, errors.New("transfer string to big.Int error"))
+					logger.Error("totalReward:", infos[i].TotalReward, " error:transfer string to big.Int error")
 					c.JSON(http.StatusInternalServerError, gin.H{
 						"error": "transfer string to big.Int error",
 					})
 					return
 				}
 				totalDelegationReward.Add(totalDelegationReward, reward)
+				if infos[i].WithdrawedReward == "" {
+					continue
+				}
 				reward, ok = new(big.Int).SetString(infos[i].WithdrawedReward, 10)
 				if !ok {
-					logger.Error(infos[i].WithdrawedReward, errors.New("transfer string to big.Int error"))
+					logger.Error("withdrawedReward:", infos[i].WithdrawedReward, " error:transfer string to big.Int error")
 					c.JSON(http.StatusInternalServerError, gin.H{
 						"error": "transfer string to big.Int error",
 					})
