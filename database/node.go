@@ -57,15 +57,15 @@ func (n *NodeInfo) UpdateNodeCommissionRate() error {
 }
 
 func (n *NodeInfo) UpdateNodeDelegationAmount() error {
-	return GlobalDataBase.Model(&LicenseInfo{}).Where("node_address = ?", n.NodeAddress).Updates(map[string]interface{}{"delegation_amount": n.DelegationAmount, "active": n.Active}).Error
+	return GlobalDataBase.Model(&NodeInfo{}).Where("node_address = ?", n.NodeAddress).Updates(map[string]interface{}{"delegation_amount": n.DelegationAmount, "active": n.Active}).Error
 }
 
 func (n *NodeInfo) UpdateNodeRewardInfo() error {
-	return GlobalDataBase.Model(&LicenseInfo{}).Where("node_address = ?", n.NodeAddress).Updates(map[string]interface{}{"self_total_reward": n.SelfTotalReward, "self_withdrawed_reward": n.SelfWithdrawedReward, "delegation_reward": n.DelegationReward}).Error
+	return GlobalDataBase.Model(&NodeInfo{}).Where("node_address = ?", n.NodeAddress).Updates(map[string]interface{}{"self_total_reward": n.SelfTotalReward, "self_withdrawed_reward": n.SelfWithdrawedReward, "delegation_reward": n.DelegationReward}).Error
 }
 
 func (n *NodeInfo) UpdateNodeOnlineDays() error {
-	return GlobalDataBase.Model(&LicenseInfo{}).Where("node_address = ?", n.NodeAddress).Updates(map[string]interface{}{"online_days": n.OnlineDays, "online_days_recent_month": n.OnlineDays_RecentMonth, "online_days_recent_week": n.OnlineDays_RecentWeek}).Error
+	return GlobalDataBase.Model(&NodeInfo{}).Where("node_address = ?", n.NodeAddress).Updates(map[string]interface{}{"online_days": n.OnlineDays, "online_days_recent_month": n.OnlineDays_RecentMonth, "online_days_recent_week": n.OnlineDays_RecentWeek}).Error
 }
 
 func GetNodeAmount() (int64, error) {
