@@ -213,6 +213,7 @@ func HandleLicensePurchase(d *dumper.Dumper) gin.HandlerFunc {
 
 		ethAmount := getEthAmount(float64(dumper.LICENSE_PRICE_USDT), dumper.EthUSD)
 		value := ethAmount * float64(req.Amount)
+		logger.Debug("license purchase timestamp:", time.Now().Format("2006-01-02 15:04:05"))
 
 		isValid, err := d.PurchaseTxValid(req.TxHash, req.Receiver, value, req.Amount)
 		if !isValid {

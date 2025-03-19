@@ -57,6 +57,7 @@ func (d *Dumper) PurchaseTxValid(txHash string, receiver string, shouldValue flo
 		return false, err
 	}
 	logger.Debug("tx is pending:", isPending)
+	logger.Debug("tx timestamp:", tx.Time().Format("2006-01-02 15:04:05"))
 
 	receipt, err := client.TransactionReceipt(context.Background(), common.HexToHash(txHash))
 	if err != nil {
@@ -77,7 +78,7 @@ func (d *Dumper) PurchaseTxValid(txHash string, receiver string, shouldValue flo
 	shouldValue_Wei := int64(shouldValue * 1e18)
 	shouldValue_Wei_bigInt := big.NewInt(shouldValue_Wei)
 	if tx.Value().Cmp(shouldValue_Wei_bigInt) < 0 {
-		if new(big.Int).Sub(shouldValue_Wei_bigInt, tx.Value()).Int64() > PAYMENT_DEVIATION*amount {
+		if new(big.Int).Sub(shouldValue_Wei_bigInt, tx.Value()).Int64() > int64(float64(shouldValue_Wei) * PAYMENT_DEVIATION) {
 			logger.Debugf("tx value %n, should pay %n, license amount %n", tx.Value(), shouldValue_Wei, amount)
 			return false, errors.New("tx value " + tx.Value().String() + ", should pay " + shouldValue_Wei_bigInt.String() + ", difference is too large")
 		}

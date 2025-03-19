@@ -53,7 +53,7 @@ type EtherscanResponse struct {
 
 const LICENSE_PAYMENT_RECEIVER = "0x389824fc8755039F165738139b255Fad711e2bCb"
 const LICENSE_PRICE_USDT = 500
-const PAYMENT_DEVIATION = int64(1e14) // wei, 2-minute 500 USD eth amount error
+const PAYMENT_DEVIATION = 0.01 // accept 1% error
 
 var (
 	// blockNumber = big.NewInt(0)
