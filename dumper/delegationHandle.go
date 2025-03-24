@@ -119,14 +119,24 @@ func (d *Dumper) HandleConfirmNodeReward(log types.Log) error {
 		return err
 	}
 	for _, licenseInfo := range licenseInfos {
-		initialReward, ok := new(big.Int).SetString(licenseInfo.InitialReward, 10)
-		if !ok {
-			continue
+		initialReward := big.NewInt(0)
+		totalReward := big.NewInt(0)
+		var ok bool
+		if licenseInfo.TotalReward != "" {
+			totalReward, ok = new(big.Int).SetString(licenseInfo.TotalReward, 10)
+			if !ok {
+				logger.Debug("licenseInfo.TotalReward transfer to big.Int error", licenseInfo.TotalReward)
+				continue
+			}
 		}
-		totalReward, ok := new(big.Int).SetString(licenseInfo.TotalReward, 10)
-		if !ok {
-			continue
+		if licenseInfo.InitialReward != "" {
+			initialReward, ok = new(big.Int).SetString(licenseInfo.InitialReward, 10)
+			if !ok {
+				logger.Debug("licenseInfo.InitialReward transfer to big.Int error", licenseInfo.InitialReward)
+				continue
+			}
 		}
+
 		addReward := new(big.Int).Sub(out.DelegationRewards, initialReward)
 		totalReward = totalReward.Add(totalReward, addReward)
 		licenseInfo.TotalReward = totalReward.String()
