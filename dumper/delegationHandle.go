@@ -321,9 +321,13 @@ func (d *Dumper) HandleClaimReward(log types.Log) error {
 	if err != nil {
 		return err
 	}
-	amount, ok := new(big.Int).SetString(info.WithdrawedReward, 10)
-	if !ok {
-		return errors.New("transfer string to big.Int error")
+	amount := big.NewInt(0)
+	var ok bool
+	if info.WithdrawedReward != "" {
+		amount, ok = new(big.Int).SetString(info.WithdrawedReward, 10)
+		if !ok {
+			return errors.New("transfer string to big.Int error")
+		}
 	}
 	amount = amount.Add(amount, out.Amount)
 
