@@ -221,7 +221,7 @@ func (d *Dumper) Dump() error {
 		logger.Error("BlockNumber err: ", err.Error())
 		return err
 	}
-	toBlock := big.NewInt(int64(currentBlockNumber - 1))
+	toBlock := big.NewInt(int64(currentBlockNumber - 20))
 
 	eventsLicenseNFT, err := client.FilterLogs(context.TODO(), ethereum.FilterQuery{
 		FromBlock: d.blockNumber,
