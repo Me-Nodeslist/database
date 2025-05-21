@@ -3,6 +3,7 @@ package dumper
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"io"
 	"log"
 	"math/big"
@@ -261,6 +262,7 @@ func (d *Dumper) Dump() error {
 	}
 
 	for _, event := range eventsLicenseNFT {
+		err = nil
 		eventName, ok1 := d.eventNameMap[event.Topics[0]]
 		if !ok1 {
 			continue
@@ -279,6 +281,7 @@ func (d *Dumper) Dump() error {
 	}
 
 	for _, event := range eventsDelMEMO {
+		err = nil
 		eventName, ok1 := d.eventNameMap[event.Topics[0]]
 		if !ok1 {
 			continue
@@ -292,8 +295,12 @@ func (d *Dumper) Dump() error {
 			err = d.HandleDelMemoMint(event)
 		case "Redeem":
 			logger.Info("Handle DelMEMO Redeem event")
-			block, _ := client.BlockByNumber(context.Background(), big.NewInt(int64(event.BlockNumber)))
-			err = d.HandleDelMemoRedeem(event, block.Time())
+			blockTime, errGetBlock := safeGetBlockTime(client, event.BlockNumber)
+			if errGetBlock != nil {
+				logger.Error(err)
+				continue
+			}
+			err = d.HandleDelMemoRedeem(event, blockTime)
 		case "CancelRedeem":
 			logger.Info("Handle DelMEMO CancelRedeem event")
 			err = d.HandleDelMemoCancelRedeem(event)
@@ -310,6 +317,7 @@ func (d *Dumper) Dump() error {
 	}
 
 	for _, event := range eventsSettlement {
+		err = nil
 		eventName, ok1 := d.eventNameMap[event.Topics[0]]
 		if !ok1 {
 			continue
@@ -331,6 +339,7 @@ func (d *Dumper) Dump() error {
 	}
 
 	for _, event := range eventsDelegation {
+		err = nil
 		eventName, ok1 := d.eventNameMap[event.Topics[0]]
 		if !ok1 {
 			continue
@@ -338,13 +347,17 @@ func (d *Dumper) Dump() error {
 		switch eventName {
 		case "NodeRegister":
 			logger.Info("Handle Delegation NodeRegister event")
-			block, _ := client.BlockByNumber(context.Background(), big.NewInt(int64(event.BlockNumber)))
+			blockTime, errGetBlock := safeGetBlockTime(client, event.BlockNumber)
+			if errGetBlock != nil {
+				logger.Error(err)
+				continue
+			}
 			nodeInfo, err := d.getNodeInfo(client, event)
 			if err != nil {
 				logger.Error(err.Error())
 				continue
 			}
-			err = d.HandleNodeRegister(event, block.Time(), &nodeInfo)
+			err = d.HandleNodeRegister(event, blockTime, &nodeInfo)
 			if err != nil {
 				logger.Error(err.Error())
 				continue
@@ -355,6 +368,7 @@ func (d *Dumper) Dump() error {
 	}
 
 	for _, event := range eventsDelegation {
+		err = nil
 		eventName, ok1 := d.eventNameMap[event.Topics[0]]
 		if !ok1 {
 			continue
@@ -362,8 +376,12 @@ func (d *Dumper) Dump() error {
 		switch eventName {
 		case "ModifyCommissionRate":
 			logger.Info("Handle Delegation ModifyCommissionRate event")
-			block, _ := client.BlockByNumber(context.Background(), big.NewInt(int64(event.BlockNumber)))
-			err = d.HandleModifyCommissionRate(event, block.Time())
+			blockTime, errGetBlock := safeGetBlockTime(client, event.BlockNumber)
+			if errGetBlock != nil {
+				logger.Error(err)
+				continue
+			}
+			err = d.HandleModifyCommissionRate(event, blockTime)
 		case "NodeWithdraw":
 			logger.Info("Handle Delegation NodeWithdraw event")
 			err = d.HandleNodeWithdraw(event)
@@ -453,4 +471,18 @@ func (d *Dumper) getNodeInfo(client *ethclient.Client, log types.Log) (database.
 	nodeInfo = *abi.ConvertType(temp[0], new(database.NodeInfoOnChain)).(*database.NodeInfoOnChain)
 	logger.Info("node info:", nodeInfo)
 	return nodeInfo, nil
+}
+
+func safeGetBlockTime(client *ethclient.Client, blockNumber uint64) (uint64, error) {
+	logger.Info("get block time, blocknumber: ", blockNumber)
+	block, err := client.BlockByNumber(context.Background(), big.NewInt(int64(blockNumber)))
+	if err != nil {
+		logger.Errorf("error fetching block: %w", err)
+		return 0, err
+	}
+	if block == nil {
+		logger.Errorf("block %d is nil", blockNumber)
+		return 0, errors.New("block is nil")
+	}
+	return block.Time(), nil
 }
